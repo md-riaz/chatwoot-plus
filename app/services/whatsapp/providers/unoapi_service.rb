@@ -2,7 +2,7 @@ require 'cgi'
 
 class Whatsapp::Providers::UnoapiService < Whatsapp::Providers::WhatsappCloudService
   def validate_provider_config?
-    url = "#{business_account_path}/message_templates?access_token=#{ENV.fetch('UNOAPI_AUTH_TOKEN', whatsapp_channel.provider_config['api_key'])}"
+    url = "#{business_account_path}/message_templates?access_token=#{unoapi_auth_token}"
     return Whatsapp::UnoapiWebhookSetupService.new.perform(whatsapp_channel) if HTTParty.get(url).success?
   end
 
@@ -97,6 +97,10 @@ class Whatsapp::Providers::UnoapiService < Whatsapp::Providers::WhatsappCloudSer
   end
 
   private
+
+  def unoapi_auth_token
+    ENV.fetch('UNOAPI_AUTH_TOKEN', nil).presence || ENV.fetch('UNOAPI_API_KEY', nil).presence || whatsapp_channel.provider_config['api_key']
+  end
 
   def unoapi_group_path(group_id)
     "#{unoapi_phone_path}/groups/#{CGI.escape(group_id.to_s)}"

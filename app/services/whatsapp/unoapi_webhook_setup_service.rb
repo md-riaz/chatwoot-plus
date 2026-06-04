@@ -65,9 +65,13 @@ class Whatsapp::UnoapiWebhookSetupService
 
   def headers(whatsapp_channel)
     {
-      Authorization: ENV.fetch('UNOAPI_AUTH_TOKEN', whatsapp_channel.provider_config['api_key']),
+      Authorization: unoapi_auth_token(whatsapp_channel),
       'Content-Type': 'application/json'
     }
+  end
+
+  def unoapi_auth_token(whatsapp_channel)
+    ENV.fetch('UNOAPI_AUTH_TOKEN', nil).presence || ENV.fetch('UNOAPI_API_KEY', nil).presence || whatsapp_channel.provider_config['api_key']
   end
 
   # rubocop:disable Metrics/MethodLength
