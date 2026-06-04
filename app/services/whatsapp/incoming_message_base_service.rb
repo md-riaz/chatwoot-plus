@@ -148,11 +148,6 @@ class Whatsapp::IncomingMessageBaseService
   def preserve_deleted_message_content?
     ActiveModel::Type::Boolean.new.cast(inbox.account.show_deleted_message_content)
   end
-      create_message(contact, source_id: message[:id])
-      attach_contact(contact)
-      @message.save!
-    end
-  end
 
   def create_regular_message(message)
     create_message(message, source_id: message[:id])
