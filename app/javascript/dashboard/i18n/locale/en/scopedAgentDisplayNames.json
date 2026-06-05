@@ -1,0 +1,24 @@
+{
+  "SCOPED_AGENT_DISPLAY_NAMES": {
+    "HEADER": "Agent display names",
+    "DESCRIPTION": "Set customer-facing agent names for this account, with optional inbox-specific overrides.",
+    "LOADING": "Fetching agent display names",
+    "SAVE": "Save",
+    "ACCOUNT_SECTION": {
+      "TITLE": "Account display names",
+      "DESCRIPTION": "Used for customer-facing messages in this account unless an inbox-specific name is set.",
+      "FIELD_LABEL": "Display name for this account"
+    },
+    "INBOX_SECTION": {
+      "TITLE": "Inbox display names",
+      "DESCRIPTION": "Override the account display name for messages sent from a specific inbox.",
+      "SELECT_LABEL": "Inbox",
+      "SELECT_PLACEHOLDER": "Select an inbox",
+      "FIELD_LABEL": "Display name in this inbox"
+    },
+    "API": {
+      "SUCCESS_MESSAGE": "Agent display name updated successfully",
+      "ERROR_MESSAGE": "Could not update agent display name. Please try again"
+    }
+  }
+}

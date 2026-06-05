@@ -171,7 +171,8 @@ module Plus::WhatsappCloudProviderExtension
     normalized_content = whatsapp_outgoing_content(message)&.rstrip
     return normalized_content unless should_prefix_sender_name?(message)
 
-    message.sender_name.present? ? "*#{message.sender_name}*: #{normalized_content}" : normalized_content
+    scoped_sender_name = Plus::ScopedAgentDisplayNameResolver.call(user: message.sender, account: message.account, inbox: message.inbox)
+    scoped_sender_name.present? ? "*#{scoped_sender_name}*: #{normalized_content}" : normalized_content
   end
 
   def whatsapp_outgoing_content(message)

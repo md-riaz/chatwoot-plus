@@ -1,0 +1,24 @@
+{
+  "SCOPED_AGENT_DISPLAY_NAMES": {
+    "HEADER": "Nomes de exibição dos agentes",
+    "DESCRIPTION": "Defina nomes de agentes exibidos aos clientes nesta conta, com substituições opcionais por caixa de entrada.",
+    "LOADING": "Buscando nomes de exibição dos agentes",
+    "SAVE": "Salvar",
+    "ACCOUNT_SECTION": {
+      "TITLE": "Nomes de exibição da conta",
+      "DESCRIPTION": "Usados em mensagens exibidas aos clientes nesta conta, exceto quando houver um nome específico da caixa de entrada.",
+      "FIELD_LABEL": "Nome de exibição nesta conta"
+    },
+    "INBOX_SECTION": {
+      "TITLE": "Nomes de exibição da caixa de entrada",
+      "DESCRIPTION": "Substitua o nome de exibição da conta para mensagens enviadas por uma caixa de entrada específica.",
+      "SELECT_LABEL": "Caixa de entrada",
+      "SELECT_PLACEHOLDER": "Selecione uma caixa de entrada",
+      "FIELD_LABEL": "Nome de exibição nesta caixa de entrada"
+    },
+    "API": {
+      "SUCCESS_MESSAGE": "Nome de exibição do agente atualizado com sucesso",
+      "ERROR_MESSAGE": "Não foi possível atualizar o nome de exibição do agente. Tente novamente"
+    }
+  }
+}

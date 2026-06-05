@@ -49,6 +49,7 @@ export const FEATURE_FLAGS = {
   CONVERSATION_UNREAD_COUNTS: 'conversation_unread_counts',
   KANBAN: 'kanban',
   PRIVATE_NOTE_COLLABORATION: 'private_note_collaboration',
+  SCOPED_AGENT_DISPLAY_NAME: 'scoped_agent_display_name',
 };
 
 export const PREMIUM_FEATURES = [
