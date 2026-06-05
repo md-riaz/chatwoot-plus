@@ -45,6 +45,7 @@ class Whatsapp::IncomingMessageBaseService
     return if process_message_edit
     return if find_message_by_source_id(messages_data.first[:id])
     return unless lock_message_source_id!
+    process_referral(messages_data.first)
     set_message_type
     set_contact
     return unless @contact

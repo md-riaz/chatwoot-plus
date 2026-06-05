@@ -346,6 +346,18 @@
         "CANCEL": "Cancel"
       }
     },
+    "WHATSAPP_AD_REFERRAL": {
+      "FROM_AD_FACEBOOK": "From Facebook ad",
+      "FROM_AD_INSTAGRAM": "From Instagram ad",
+      "FROM_AD_UNKNOWN": "From WhatsApp ad",
+      "FROM_POST_FACEBOOK": "From Facebook post",
+      "FROM_POST_INSTAGRAM": "From Instagram post",
+      "FROM_POST_UNKNOWN": "From WhatsApp post",
+      "AD_ID": "Ad ID",
+      "POST_ID": "Post ID",
+      "VIEW_AD": "View ad",
+      "ID_LABEL": "{label}: {id}"
+    },
     "SIDEBAR": {
       "CONTACT": "Contact",
       "GROUP": "Group",

@@ -305,6 +305,18 @@
         "CANCEL": "Cancelar"
       }
     },
+    "WHATSAPP_AD_REFERRAL": {
+      "FROM_AD_FACEBOOK": "Do anúncio do Facebook",
+      "FROM_AD_INSTAGRAM": "Do anúncio do Instagram",
+      "FROM_AD_UNKNOWN": "Do anúncio do WhatsApp",
+      "FROM_POST_FACEBOOK": "Da publicação do Facebook",
+      "FROM_POST_INSTAGRAM": "Da publicação do Instagram",
+      "FROM_POST_UNKNOWN": "Da publicação do WhatsApp",
+      "AD_ID": "ID do anúncio",
+      "POST_ID": "ID da publicação",
+      "VIEW_AD": "Ver anúncio",
+      "ID_LABEL": "{label}: {id}"
+    },
     "SIDEBAR": {
       "CONTACT": "Contatos",
       "COPILOT": "Copiloto"

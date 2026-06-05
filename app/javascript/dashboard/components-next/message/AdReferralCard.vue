@@ -42,18 +42,31 @@ const sourceType = computed(() => {
   return props.referral?.source_type === 'post' ? 'post' : 'ad';
 });
 
-const sourceLabelKey = computed(() => {
-  // CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_<TYPE>_<PLATFORM>
-  const typePart = sourceType.value.toUpperCase();
-  const platformPart = sourcePlatform.value.toUpperCase();
-  return `CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_${typePart}_${platformPart}`;
+const sourceLabel = computed(() => {
+  const labels = {
+    ad: {
+      facebook: t('CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_AD_FACEBOOK'),
+      instagram: t('CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_AD_INSTAGRAM'),
+      unknown: t('CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_AD_UNKNOWN'),
+    },
+    post: {
+      facebook: t('CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_POST_FACEBOOK'),
+      instagram: t('CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_POST_INSTAGRAM'),
+      unknown: t('CONVERSATION.WHATSAPP_AD_REFERRAL.FROM_POST_UNKNOWN'),
+    },
+  };
+
+  return labels[sourceType.value][sourcePlatform.value];
+});
+const sourceIdLabel = computed(() => {
+  if (sourceType.value === 'post') {
+    return t('CONVERSATION.WHATSAPP_AD_REFERRAL.POST_ID');
+  }
+
+  return t('CONVERSATION.WHATSAPP_AD_REFERRAL.AD_ID');
 });
 
-const sourceLabel = computed(() => t(sourceLabelKey.value));
-
-const headline = computed(() =>
-  String(props.referral?.headline || '').trim()
-);
+const headline = computed(() => String(props.referral?.headline || '').trim());
 const body = computed(() => String(props.referral?.body || '').trim());
 const sourceId = computed(() => String(props.referral?.source_id || '').trim());
 const sourceUrl = computed(() => props.referral?.source_url || '');
@@ -118,7 +131,12 @@ const handleImageError = event => {
         class="text-[11px] font-mono truncate text-n-slate-10"
         :title="sourceId"
       >
-        {{ sourceType === 'post' ? 'Post ID' : 'Ad ID' }}: {{ sourceId }}
+        {{
+          $t('CONVERSATION.WHATSAPP_AD_REFERRAL.ID_LABEL', {
+            label: sourceIdLabel,
+            id: sourceId,
+          })
+        }}
       </span>
       <span
         v-if="headline"

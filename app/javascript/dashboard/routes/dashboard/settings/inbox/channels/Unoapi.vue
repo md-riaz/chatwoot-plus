@@ -80,6 +80,7 @@ export default {
                 ignore_group_messages: this.ignoreGroupMessages,
                 send_agent_name: this.sendAgentName,
                 webhook_send_new_messages: this.webhookSendNewMessages,
+                use_group_conversation_schema: true,
                 connect: true,
                 url: this.url,
               },

@@ -25,6 +25,8 @@ const {
   DISABLE_USER_PROFILE_UPDATE: disableUserProfileUpdate,
   DEPLOYMENT_ENV: deploymentEnv,
   ACTIVE_PLATFORM_BANNERS: activePlatformBanners,
+  OMNI_COMMENTS_PAGE_ENABLED: omniCommentsPageEnabled,
+  OMNI_COMMENTS_PAGE_USER_IDS: omniCommentsPageUserIds,
 } = window.globalConfig || {};
 
 const state = {
@@ -51,6 +53,8 @@ const state = {
   widgetBrandURL,
   isEnterprise: parseBoolean(isEnterprise),
   activePlatformBanners: activePlatformBanners || [],
+  omniCommentsPageEnabled: parseBoolean(omniCommentsPageEnabled),
+  omniCommentsPageUserIds: omniCommentsPageUserIds || '',
 };
 
 export const getters = {
