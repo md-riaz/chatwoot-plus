@@ -111,6 +111,7 @@ const adReferral = computed(() => {
   const hasIdentifyingField =
     referral.headline ||
     referral.body ||
+    referral.ad_title ||
     referral.ref ||
     referral.source_url ||
     referral.referer_uri ||
@@ -120,7 +121,11 @@ const adReferral = computed(() => {
     referral.image_url ||
     referral.image ||
     referral.media_url ||
-    referral.thumbnail_url;
+    referral.thumbnail_url ||
+    referral.photo_url ||
+    referral.video_url ||
+    referral.product_id ||
+    referral.flow_id;
   return hasIdentifyingField ? referral : null;
 });
 </script>

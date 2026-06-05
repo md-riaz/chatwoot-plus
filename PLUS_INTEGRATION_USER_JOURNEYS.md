@@ -175,18 +175,21 @@ Show ad referral data inline in message bubbles for supported Meta channels:
 - Instagram ads
 
 ### Prerequisites
-- Inbound message payload contains Meta `referral` data.
+- WhatsApp payload contains message-level `referral`, or Messenger/Instagram payload contains event-level `referral`.
+- Facebook app is subscribed to Messenger webhook fields:
+  - `messaging_referrals` for existing threads
+  - `messaging_postbacks` for new threads/Get Started flows
 - Conversation opened from a WhatsApp, Messenger, or Instagram ad.
 
 ### Steps
 1. Trigger a WhatsApp CTWA, Messenger ad, or Instagram ad click.
-2. Send the first inbound message from the customer.
+2. Send the first inbound message from the customer, or complete Messenger Get Started if this is a new thread.
 3. Open the conversation in Chatwoot.
 4. Inspect the first inbound message bubble.
 
 ### Expected result
 - Inline ad referral card appears when `message.content_attributes.referral` exists.
-- Card shows verified Meta keys such as headline/body/source/ad id/post id/image.
+- Card shows verified Meta keys such as headline/ad title, body/ref, ad id, post id, product id, flow id, and image/video preview when supplied.
 - Standard 1-to-1 messages without referral do not show the card.
 
 ### Verified in deployment
