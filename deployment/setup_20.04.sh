@@ -22,6 +22,10 @@ OPTIONS=cdhiI:l:rsuU:wvWK
 CWCTL_VERSION="3.5.0"
 pg_pass=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 15 ; echo '')
 CHATWOOT_HUB_URL="https://hub.2.chatwoot.com/events"
+CHATWOOT_REPO=${CHATWOOT_REPO:-https://github.com/md-riaz/chatwoot-plus.git}
+CWCTL_REMOTE_VERSION_URL=${CWCTL_REMOTE_VERSION_URL:-https://raw.githubusercontent.com/md-riaz/chatwoot-plus/develop/VERSION_CWCTL}
+CHATWOOT_DEFAULT_BRANCH=${CHATWOOT_DEFAULT_BRANCH:-develop}
+CWCTL_REMOTE_SCRIPT_URL=${CWCTL_REMOTE_SCRIPT_URL:-https://raw.githubusercontent.com/md-riaz/chatwoot-plus/develop/deployment/setup_20.04.sh}
 
 # if user does not specify an option
 if [ "$#" -eq 0 ]; then
@@ -42,7 +46,7 @@ fi
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$PARSED"
 
-c=n d=n h=n i=n I=n l=n r=n s=n u=n U=n w=n v=n W=n K=n C=n BRANCH=master SERVICE=web DEPLOYMENT_TYPE=full CONVERT_TO=""
+c=n d=n h=n i=n I=n l=n r=n s=n u=n U=n w=n v=n W=n K=n C=n BRANCH=master SERVICE=web DEPLOYMENT_TYPE=full CONVERT_TO="" INSTALL_UNOAPI=no
 # Iterate options in order and nicely split until we see --
 while true; do
     case "$1" in
@@ -60,7 +64,7 @@ while true; do
             ;;
         -i|--install)
             i=y
-            BRANCH="master"
+            BRANCH="$CHATWOOT_DEFAULT_BRANCH"
             break
             ;;
        -I|--Install)
@@ -83,7 +87,7 @@ while true; do
             ;;
         -u|--upgrade)
             u=y
-            BRANCH="master"
+            BRANCH="$CHATWOOT_DEFAULT_BRANCH"
             break
             ;;
         -U|--Upgrade)
@@ -143,7 +147,7 @@ done
 # log if debug flag set
 if [ "$d" == "y" ]; then
   echo "console: $c, debug: $d, help: $h, install: $i, Install: $I, BRANCH: $BRANCH, \
-  logs: $l, SERVICE: $SERVICE, ssl: $s, upgrade: $u, Upgrade: $U, webserver: $w, web-only: $W, worker-only: $K, convert: $C, convert-to: $CONVERT_TO, deployment-type: $DEPLOYMENT_TYPE"
+  logs: $l, SERVICE: $SERVICE, ssl: $s, upgrade: $u, Upgrade: $U, webserver: $w, web-only: $W, worker-only: $K, convert: $C, convert-to: $CONVERT_TO, deployment-type: $DEPLOYMENT_TYPE, install-unoapi: $INSTALL_UNOAPI"
 fi
 
 # exit if script is not run as root
@@ -368,6 +372,10 @@ EOF
 ##############################################################################
 function setup_chatwoot() {
   local secret=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 63 ; echo '')
+  local unoapi_key=''
+  if [ "$INSTALL_UNOAPI" == "yes" ]; then
+    unoapi_key=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 40 ; echo '')
+  fi
   local RAILS_ENV=production
   get_pgpass
 
@@ -377,7 +385,7 @@ function setup_chatwoot() {
   rvm install "ruby-3.4.4"
   rvm use 3.4.4 --default
 
-  git clone https://github.com/chatwoot/chatwoot.git
+  git clone "$CHATWOOT_REPO" chatwoot
   cd chatwoot
   git checkout "$BRANCH"
   bundle
@@ -387,6 +395,10 @@ function setup_chatwoot() {
   sed -i -e "/SECRET_KEY_BASE/ s/=.*/=$secret/" .env
   sed -i -e '/REDIS_URL/ s/=.*/=redis:\/\/localhost:6379/' .env
   sed -i -e '/POSTGRES_HOST/ s/=.*/=localhost/' .env
+  if [ "$INSTALL_UNOAPI" == "yes" ]; then
+    sed -i -e '/UNOAPI_URL/ s|=.*|=http://localhost:9876|' .env
+    sed -i -e "/UNOAPI_API_KEY/ s/=.*/=$unoapi_key/" .env
+  fi
   sed -i -e '/POSTGRES_USERNAME/ s/=.*/=chatwoot/' .env
   sed -i -e "/POSTGRES_PASSWORD/ s/=.*/=$pg_pass/" .env
   sed -i -e '/RAILS_ENV/ s/=.*/=$RAILS_ENV/' .env
@@ -410,6 +422,38 @@ function run_db_migrations(){
   cd chatwoot
   RAILS_ENV=production POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:chatwoot_prepare
 EOF
+}
+
+##############################################################################
+# Install UnoAPI service for Linux deployments.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Outputs:
+#   None
+##############################################################################
+function install_unoapi_service() {
+  [ "$INSTALL_UNOAPI" != "yes" ] && return
+
+  apt-get install -y unzip
+  local unoapi_zip_url="${UNOAPI_LINUX_ZIP_URL:-https://github.com/clairton/unoapi-cloud/archive/refs/heads/main.zip}"
+
+  sudo -i -u chatwoot << EOF
+  rm -rf unoapi unoapi.zip unoapi-src
+  wget -q "$unoapi_zip_url" -O unoapi.zip
+  mkdir unoapi-src
+  unzip -q unoapi.zip -d unoapi-src
+  mv unoapi-src/* unoapi
+  rm -rf unoapi-src unoapi.zip
+  cd unoapi
+  pnpm i
+  pnpm build
+EOF
+  cp /home/chatwoot/chatwoot/deployment/unoapi.service /etc/systemd/system/unoapi.service
+  systemctl daemon-reload
+  systemctl enable unoapi.service
+  systemctl start unoapi.service
 }
 
 ##############################################################################
@@ -626,6 +670,12 @@ EOF
   fi
 
   echo -en "\n"
+  read -rp 'Would you like to install UnoAPI for self-hosted WhatsApp? (yes or no): ' install_unoapi
+  if [ "$install_unoapi" == "yes" ]; then
+    INSTALL_UNOAPI=yes
+  fi
+
+  echo -en "\n"
   read -rp 'Would you like to install Postgres and Redis? (Answer no if you plan to use external services)(yes or no): ' install_pg_redis
 
   echo -en "\n➥ 1/9 Installing dependencies. This takes a while.\n"
@@ -667,7 +717,9 @@ EOF
 
   echo "➥ 8/9 Setting up systemd services."
   configure_systemd_services &>> "${LOG_FILE}"
-
+  if [ "$INSTALL_UNOAPI" == "yes" ]; then
+    install_unoapi_service &>> "${LOG_FILE}"
+  fi
   public_ip=$(curl http://checkip.amazonaws.com -s)
 
   if [ "$configure_webserver" != "yes" ]
@@ -1192,7 +1244,6 @@ function version() {
   echo "cwctl v$CWCTL_VERSION"
 }
 
-##############################################################################
 # Check if there is newer version of cwctl and upgrade if found
 # Globals:
 #   CWCTL_VERSION
@@ -1205,7 +1256,7 @@ function version() {
 function cwctl_upgrade_check() {
     echo "Checking for cwctl updates..."
 
-    local remote_version_url="https://raw.githubusercontent.com/chatwoot/chatwoot/master/VERSION_CWCTL"
+    local remote_version_url="$CWCTL_REMOTE_VERSION_URL"
     local remote_version=$(curl -s "$remote_version_url")
 
     #Check if pip is not installed, and install it if not
@@ -1266,7 +1317,7 @@ function install_packaging() {
 #   None
 ##############################################################################
 function upgrade_cwctl() {
-    wget https://get.chatwoot.app/linux/install.sh -O /usr/local/bin/cwctl > /dev/null 2>&1 && chmod +x /usr/local/bin/cwctl
+    wget "$CWCTL_REMOTE_SCRIPT_URL" -O /usr/local/bin/cwctl > /dev/null 2>&1 && chmod +x /usr/local/bin/cwctl
 }
 
 ##############################################################################
