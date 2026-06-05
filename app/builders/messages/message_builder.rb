@@ -140,11 +140,18 @@ class Messages::MessageBuilder
   end
 
   def message_params
+    content = Plus::MessageSignatureAppender.call(
+      content: @params[:content],
+      conversation: @conversation,
+      message_type: message_type,
+      private_message: @private
+    )
+
     {
       account_id: @conversation.account_id,
       inbox_id: @conversation.inbox_id,
       message_type: message_type,
-      content: @params[:content],
+      content: content,
       private: @private,
       sender: sender,
       content_type: @params[:content_type],

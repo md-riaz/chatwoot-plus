@@ -40,7 +40,7 @@ class ConversationFinder
   def perform
     set_up
 
-    mine_count, unassigned_count, all_count, = set_count_for_all_conversations
+    mine_count, unassigned_count, all_count, group_count = set_count_for_all_conversations
     assigned_count = all_count - unassigned_count
 
     filter_by_assignee_type
@@ -51,7 +51,8 @@ class ConversationFinder
         mine_count: mine_count,
         assigned_count: assigned_count,
         unassigned_count: unassigned_count,
-        all_count: all_count
+        all_count: all_count,
+        group_count: group_count
       }
     }
   end
@@ -59,7 +60,7 @@ class ConversationFinder
   def perform_meta_only
     set_up
 
-    mine_count, unassigned_count, all_count, = set_count_for_all_conversations
+    mine_count, unassigned_count, all_count, group_count = set_count_for_all_conversations
     assigned_count = all_count - unassigned_count
 
     {
@@ -67,7 +68,8 @@ class ConversationFinder
         mine_count: mine_count,
         assigned_count: assigned_count,
         unassigned_count: unassigned_count,
-        all_count: all_count
+        all_count: all_count,
+        group_count: group_count
       }
     }
   end
@@ -128,7 +130,9 @@ class ConversationFinder
     when 'me'
       @conversations = @conversations.assigned_to(current_user)
     when 'unassigned'
-      @conversations = @conversations.unassigned
+      @conversations = @conversations.non_group_conversations.unassigned
+    when 'groups'
+      @conversations = @conversations.group_conversations
     when 'assigned'
       @conversations = @conversations.assigned
     end
@@ -186,8 +190,9 @@ class ConversationFinder
   def set_count_for_all_conversations
     [
       @conversations.assigned_to(current_user).count,
-      @conversations.unassigned.count,
-      @conversations.count
+      @conversations.non_group_conversations.unassigned.count,
+      @conversations.count,
+      @conversations.group_conversations.count
     ]
   end
 

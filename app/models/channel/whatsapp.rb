@@ -25,7 +25,7 @@ class Channel::Whatsapp < ApplicationRecord
   EDITABLE_ATTRS = [:phone_number, :provider, { provider_config: {} }].freeze
 
   # default at the moment is 360dialog lets change later.
-  PROVIDERS = %w[default whatsapp_cloud].freeze
+  PROVIDERS = %w[default whatsapp_cloud unoapi].freeze
   before_validation :ensure_webhook_verify_token
 
   validates :provider, inclusion: { in: PROVIDERS }
@@ -59,6 +59,8 @@ class Channel::Whatsapp < ApplicationRecord
   def provider_service
     if provider == 'whatsapp_cloud'
       Whatsapp::Providers::WhatsappCloudService.new(whatsapp_channel: self)
+    elsif provider == 'unoapi'
+      Whatsapp::Providers::UnoapiService.new(whatsapp_channel: self)
     else
       Whatsapp::Providers::Whatsapp360DialogService.new(whatsapp_channel: self)
     end
@@ -101,6 +103,13 @@ class Channel::Whatsapp < ApplicationRecord
 
   delegate :send_message, to: :provider_service
   delegate :send_template, to: :provider_service
+
+  def send_message_delete(message)
+    return false unless provider_service.respond_to?(:send_message_update)
+
+    provider_service.send_message_update(provider_delete_payload(message))
+  end
+
   delegate :sync_templates, to: :provider_service
   delegate :media_url, to: :provider_service
   delegate :api_headers, to: :provider_service
@@ -112,10 +121,23 @@ class Channel::Whatsapp < ApplicationRecord
     prompt_reauthorization!
   end
 
+  def provider_delete_payload(message)
+    {
+      status: 'deleted',
+      source_id: message.source_id,
+      sender: { phone_number: message.sender&.phone_number },
+      conversation: {
+        group: message.conversation.group?,
+        group_source_id: message.conversation.group_source_id,
+        contact_inbox: message.conversation.contact_inbox
+      }
+    }
+  end
+
   private
 
   def ensure_webhook_verify_token
-    provider_config['webhook_verify_token'] ||= SecureRandom.hex(16) if provider == 'whatsapp_cloud'
+    provider_config['webhook_verify_token'] ||= SecureRandom.hex(16) if %w[whatsapp_cloud unoapi].include?(provider)
   end
 
   def validate_provider_config

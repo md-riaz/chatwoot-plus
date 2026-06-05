@@ -12,11 +12,10 @@ import {
 } from './helpers/actionHelpers';
 import messageReadActions from './actions/messageReadActions';
 import messageTranslateActions from './actions/messageTranslateActions';
-import * as Sentry from '@sentry/vue';
+import attachmentActions from './actions/attachmentActions';
 import {
   handleVoiceCallCreated,
   handleVoiceCallUpdated,
-  syncConversationCallVisibility,
 } from 'dashboard/helper/voice';
 
 export const hasMessageFailedWithExternalError = pendingMessage => {
@@ -105,27 +104,7 @@ const actions = {
     }
   },
 
-  fetchAllAttachments: async ({ commit }, conversationId) => {
-    let attachments = [];
-
-    try {
-      const { data } = await ConversationApi.getAllAttachments(conversationId);
-      attachments = data.payload;
-    } catch (error) {
-      // in case of error, log the error and continue
-      Sentry.setContext('Conversation', {
-        id: conversationId,
-      });
-      Sentry.captureException(error);
-    } finally {
-      // we run the commit even if the request fails
-      // this ensures that the `attachment` variable is always present on chat
-      commit(types.SET_ALL_ATTACHMENTS, {
-        id: conversationId,
-        data: attachments,
-      });
-    }
-  },
+  ...attachmentActions,
 
   syncActiveConversationMessages: async (
     { commit, state, dispatch },
@@ -244,7 +223,7 @@ const actions = {
   },
 
   toggleStatus: async (
-    { commit },
+    { commit, dispatch, state },
     { conversationId, status, snoozedUntil = null, customAttributes = null }
   ) => {
     try {
@@ -277,6 +256,9 @@ const actions = {
         status: updatedStatus,
         snoozedUntil: updatedSnoozedUntil,
       });
+      dispatch('conversationStats/get', state.conversationFilters || {}, {
+        root: true,
+      });
     } catch (error) {
       // Handle error
     }
@@ -287,7 +269,7 @@ const actions = {
     dispatch('sendMessageWithData', pendingMessage);
   },
 
-  sendMessageWithData: async ({ commit }, pendingMessage) => {
+  sendMessageWithData: async ({ commit, dispatch, state }, pendingMessage) => {
     const { conversation_id: conversationId, id } = pendingMessage;
     try {
       commit(types.ADD_MESSAGE, {
@@ -305,6 +287,12 @@ const actions = {
         ...response.data,
         status: MESSAGE_STATUS.SENT,
       });
+      if (state.conversationFilters?.assigneeType === 'waiting') {
+        dispatch('conversationStats/get', state.conversationFilters, {
+          root: true,
+        });
+        dispatch('fetchAllConversations');
+      }
     } catch (error) {
       const errorMessage = error.response
         ? error.response.data.error
@@ -320,6 +308,21 @@ const actions = {
     }
   },
 
+  sendMessageReaction: async (
+    { commit },
+    { conversationId, messageId, emoji }
+  ) => {
+    const { data } = await MessageApi.react(conversationId, messageId, emoji);
+    commit(types.ADD_MESSAGE, data);
+    return data;
+  },
+
+  editMessage: async ({ commit }, { conversationId, messageId, content }) => {
+    const { data } = await MessageApi.edit(conversationId, messageId, content);
+    commit(types.ADD_MESSAGE, data);
+    return data;
+  },
+
   addMessage({ commit, rootGetters }, message) {
     commit(types.ADD_MESSAGE, message);
     if (message.message_type === MESSAGE_TYPE.INCOMING) {
@@ -329,21 +332,12 @@ const actions = {
       });
       commit(types.ADD_CONVERSATION_ATTACHMENTS, message);
     }
-    handleVoiceCallCreated(
-      message,
-      rootGetters?.getCurrentUserID,
-      rootGetters?.getCurrentUserAvailability
-    );
+    handleVoiceCallCreated(message, rootGetters?.getCurrentUserID);
   },
 
   updateMessage({ commit, rootGetters }, message) {
     commit(types.ADD_MESSAGE, message);
-    handleVoiceCallUpdated(
-      commit,
-      message,
-      rootGetters?.getCurrentUserID,
-      rootGetters?.getCurrentUserAvailability
-    );
+    handleVoiceCallUpdated(commit, message, rootGetters?.getCurrentUserID);
   },
 
   deleteMessage: async function deleteLabels(
@@ -403,18 +397,19 @@ const actions = {
     }
   },
 
-  updateConversation({ commit, dispatch, rootGetters }, conversation) {
-    const sender = conversation.meta?.sender;
+  updateConversation({ commit, dispatch }, conversation) {
+    const {
+      meta: { sender },
+    } = conversation;
 
     commit(types.UPDATE_CONVERSATION, conversation);
-    syncConversationCallVisibility(conversation, rootGetters?.getCurrentUserID);
 
     dispatch('conversationLabels/setConversationLabel', {
       id: conversation.id,
       data: conversation.labels,
     });
 
-    if (sender) dispatch('contacts/setContact', sender);
+    dispatch('contacts/setContact', sender);
   },
 
   updateConversationLastActivity(

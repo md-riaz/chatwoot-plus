@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 
 import MessageMeta from '../MessageMeta.vue';
+import AdReferralCard from '../AdReferralCard.vue';
 
 import { emitter } from 'shared/helpers/mitt';
 import { useMessageContext } from '../provider.js';
@@ -9,14 +10,20 @@ import { useI18n } from 'vue-i18n';
 
 import MessageFormatter from 'shared/helpers/MessageFormatter.js';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
-import { MESSAGE_VARIANTS, ORIENTATION } from '../constants';
+import { MESSAGE_TYPES, MESSAGE_VARIANTS, ORIENTATION } from '../constants';
 
 const props = defineProps({
   hideMeta: { type: Boolean, default: false },
 });
 
-const { variant, orientation, inReplyTo, shouldGroupWithNext } =
-  useMessageContext();
+const {
+  variant,
+  orientation,
+  inReplyTo,
+  shouldGroupWithNext,
+  contentAttributes,
+  messageType,
+} = useMessageContext();
 const { t } = useI18n();
 
 const varaintBaseMap = {
@@ -91,6 +98,36 @@ const replyToPreview = computed(() => {
 
   return t('CONVERSATION.REPLY_MESSAGE_NOT_FOUND');
 });
+
+// Surface Meta ad referral blocks persisted on supported inbound channels.
+// WhatsApp CTWA, Facebook Messenger ads, and Instagram ads use different
+// payload keys, so AdReferralCard maps each verified key explicitly.
+// Outbound and activity messages never carry a referral, so we gate by
+// message type to keep the contract narrow.
+const adReferral = computed(() => {
+  if (messageType.value !== MESSAGE_TYPES.INCOMING) return null;
+  const referral = contentAttributes.value?.referral;
+  if (!referral || typeof referral !== 'object') return null;
+  const hasIdentifyingField =
+    referral.headline ||
+    referral.body ||
+    referral.ad_title ||
+    referral.ref ||
+    referral.source_url ||
+    referral.referer_uri ||
+    referral.source_id ||
+    referral.ad_id ||
+    referral.post_id ||
+    referral.image_url ||
+    referral.image ||
+    referral.media_url ||
+    referral.thumbnail_url ||
+    referral.photo_url ||
+    referral.video_url ||
+    referral.product_id ||
+    referral.flow_id;
+  return hasIdentifyingField ? referral : null;
+});
 </script>
 
 <template>
@@ -113,6 +150,7 @@ const replyToPreview = computed(() => {
         class="prose prose-bubble line-clamp-2"
       />
     </div>
+    <AdReferralCard v-if="adReferral" :referral="adReferral" />
     <slot />
     <MessageMeta
       v-if="shouldShowMeta"

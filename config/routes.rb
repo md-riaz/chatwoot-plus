@@ -137,6 +137,7 @@ Rails.application.routes.draw do
               get :search
               get :unread_counts, to: 'conversations/unread_counts#index'
               post :filter
+              draw :plus_conversation_collection_routes
             end
             scope module: :conversations do
               resources :messages, only: [:index, :create, :destroy, :update] do
@@ -145,6 +146,7 @@ Rails.application.routes.draw do
                   post :retry
                 end
               end
+              draw :plus_conversation_scoped_routes
               resources :assignments, only: [:create]
               resources :labels, only: [:create, :index]
               resource :participants, only: [:show, :create, :update, :destroy]
@@ -213,6 +215,7 @@ Rails.application.routes.draw do
               resources :labels, only: [:create, :index]
               resources :notes
               get :attachments, to: 'attachments#index'
+              draw :plus_contact_routes
               post :call, on: :member, to: 'calls#create' if ChatwootApp.enterprise?
             end
           end
@@ -406,10 +409,14 @@ Rails.application.routes.draw do
           end
 
           resources :upload, only: [:create]
+
+          draw :plus_omni_ai_routes
         end
       end
       # end of account scoped api routes
       # ----------------------------------
+
+      draw :plus_omni_ai_webhook_routes
 
       namespace :integrations do
         resources :webhooks, only: [:create]

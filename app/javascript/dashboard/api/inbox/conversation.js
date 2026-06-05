@@ -137,6 +137,69 @@ class ConversationApi extends ApiClient {
     return axios.get(`${this.url}/${conversationId}/inbox_assistant`);
   }
 
+  createGroup({ inboxId, subject, description, participants = [] }) {
+    return axios.post(`${this.url}/groups`, {
+      inbox_id: inboxId,
+      subject,
+      description,
+      participants,
+    });
+  }
+
+  fetchGroup(conversationId) {
+    return axios.get(`${this.url}/${conversationId}/group`);
+  }
+
+  updateGroup({ conversationId, subject, description, picture }) {
+    return axios.patch(`${this.url}/${conversationId}/group`, {
+      subject,
+      description,
+      picture,
+    });
+  }
+
+  fetchGroupContacts(conversationId, page = 1, query = '') {
+    return axios.get(`${this.url}/${conversationId}/group_contacts`, {
+      params: { page, query },
+    });
+  }
+
+  addGroupContacts({ conversationId, participants }) {
+    return axios.post(`${this.url}/${conversationId}/group_contacts`, {
+      participants,
+    });
+  }
+
+  removeGroupContacts({ conversationId, participants }) {
+    return axios.delete(`${this.url}/${conversationId}/group_contacts`, {
+      data: { participants },
+    });
+  }
+
+  fetchGroupInviteLink(conversationId) {
+    return axios.get(`${this.url}/${conversationId}/group/invite_link`);
+  }
+
+  resetGroupInviteLink(conversationId) {
+    return axios.post(`${this.url}/${conversationId}/group/invite_link/reset`);
+  }
+
+  fetchGroupJoinRequests(conversationId) {
+    return axios.get(`${this.url}/${conversationId}/group/join_requests`);
+  }
+
+  approveGroupJoinRequests({ conversationId, participants }) {
+    return axios.post(`${this.url}/${conversationId}/group/join_requests`, {
+      participants,
+    });
+  }
+
+  rejectGroupJoinRequests({ conversationId, participants }) {
+    return axios.delete(`${this.url}/${conversationId}/group/join_requests`, {
+      data: { participants },
+    });
+  }
+
   delete(conversationId) {
     return axios.delete(`${this.url}/${conversationId}`);
   }

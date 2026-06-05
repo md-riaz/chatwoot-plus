@@ -54,9 +54,23 @@ class ContactMergeAction
     # attributes in base contact are given preference
     merged_attributes = mergee_contact_attributes.deep_merge(base_contact_attributes)
 
+    preserve_mergee_avatar
     @mergee_contact.reload.destroy!
     Rails.configuration.dispatcher.dispatch(CONTACT_MERGED, Time.zone.now, contact: @base_contact,
                                                                            tokens: [@base_contact.contact_inboxes.filter_map(&:pubsub_token)])
     @base_contact.update!(merged_attributes)
+  end
+
+  def preserve_mergee_avatar
+    return if @base_contact.avatar.attached?
+    return unless @mergee_contact.avatar.attached?
+
+    @mergee_contact.avatar.open do |tempfile|
+      @base_contact.avatar.attach(
+        io: tempfile,
+        filename: @mergee_contact.avatar.filename.to_s,
+        content_type: @mergee_contact.avatar.content_type
+      )
+    end
   end
 end

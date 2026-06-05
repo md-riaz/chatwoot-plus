@@ -1,6 +1,8 @@
 .bundle
 .env
 .env.*
+.lean-ctx
+old_conversation_history_with_AI
 docker-compose.*
 docker/Dockerfile
 docker/dockerfiles

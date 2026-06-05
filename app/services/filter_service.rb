@@ -110,8 +110,9 @@ class FilterService
   def set_count_for_all_conversations
     [
       @conversations.assigned_to(@user).count,
-      @conversations.unassigned.count,
-      @conversations.count
+      @conversations.non_group_conversations.unassigned.count,
+      @conversations.count,
+      @conversations.group_conversations.count
     ]
   end
 

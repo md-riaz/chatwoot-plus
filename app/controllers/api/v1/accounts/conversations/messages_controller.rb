@@ -19,6 +19,8 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   end
 
   def destroy
+    sync_provider_message_delete
+
     ActiveRecord::Base.transaction do
       message.update!(content: I18n.t('conversations.messages.deleted'), content_type: :text, content_attributes: { deleted: true })
       message.attachments.destroy_all
@@ -70,6 +72,16 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   def already_translated_content_available?
     message.translations.present? && message.translations[permitted_params[:target_language]].present?
+  end
+
+  def sync_provider_message_delete
+    return unless message.outgoing?
+    return unless message.source_id.present?
+    return unless @conversation.inbox.whatsapp?
+
+    @conversation.inbox.channel.send_message_delete(message)
+  rescue StandardError => e
+    Rails.logger.error("[WHATSAPP] message delete sync failed: #{e.class}: #{e.message}")
   end
 
   # API inbox check
