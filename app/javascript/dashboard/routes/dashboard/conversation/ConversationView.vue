@@ -105,6 +105,7 @@ export default {
       if (
         !messageId ||
         messageId === oldMessageId ||
+        !this.currentChat ||
         Number(this.conversationId) !== Number(this.currentChat.id)
       ) {
         return;

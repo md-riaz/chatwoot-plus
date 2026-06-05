@@ -358,7 +358,7 @@ export default {
         if (messageId && this.$route.query.messageId) {
           const query = { ...this.$route.query };
           delete query.messageId;
-          this.$router.replace({ ...this.$route, query });
+          this.$router.replace({ path: this.$route.path, query });
         }
       });
       this.makeMessagesRead();

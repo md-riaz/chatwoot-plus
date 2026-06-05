@@ -65,6 +65,7 @@ class Whatsapp::IncomingMessageBaseService
   end
 
   def status_error_message(error)
+    return if error.blank?
     error = error.with_indifferent_access
     reason = [error[:title].presence || error[:message], error.dig(:error_data, :details)].compact_blank.uniq.join(' - ')
     [error[:code], reason].compact_blank.join(': ')
