@@ -245,3 +245,9 @@
 - name: send_agent_name_in_whatsapp_message
   display_name: Send Agent Name in WhatsApp Message
   enabled: true
+- name: kanban
+  display_name: Kanban
+  enabled: true
+- name: private_note_collaboration
+  display_name: Private Note Collaboration
+  enabled: true

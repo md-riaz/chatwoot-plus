@@ -36,6 +36,26 @@ describe WebhookListener do
       end
     end
 
+      it 'keeps account-level webhooks subscribed to all inboxes' do
+        webhook = create(:webhook, inbox: nil, account: account)
+
+        expect(WebhookJob).to receive(:perform_later).with(
+          webhook.url, message.webhook_data.merge(event: 'message_created'), :account_webhook,
+          secret: webhook.secret, delivery_id: instance_of(String)
+        ).once
+
+        listener.message_created(message_created_event)
+      end
+
+      it 'does not trigger inbox-scoped webhook for another inbox' do
+        other_inbox = create(:inbox, account: account)
+        create(:webhook, inbox: other_inbox, account: account)
+
+        expect(WebhookJob).not_to receive(:perform_later)
+
+        listener.message_created(message_created_event)
+      end
+
     context 'when webhook is configured and event is not subscribed' do
       it 'does not trigger the webhook event' do
         create(:webhook, subscriptions: ['conversation_created'], inbox: inbox, account: account)
@@ -193,6 +213,30 @@ describe WebhookListener do
           webhook.url, contact.webhook_data.merge(event: 'contact_created'), :account_webhook,
           secret: webhook.secret, delivery_id: instance_of(String)
         ).once
+        listener.contact_created(contact_event)
+      end
+    end
+
+    context 'when webhook is scoped to inbox' do
+      let!(:contact_inbox) { create(:contact_inbox, contact: contact, inbox: inbox) }
+
+      it 'triggers webhook for contact linked to scoped inbox' do
+        webhook = create(:webhook, account: account, inbox: inbox, subscriptions: ['contact_created'])
+
+        expect(WebhookJob).to receive(:perform_later).with(
+          webhook.url, contact.webhook_data.merge(event: 'contact_created'), :account_webhook,
+          secret: webhook.secret, delivery_id: instance_of(String)
+        ).once
+
+        listener.contact_created(contact_event)
+      end
+
+      it 'does not trigger webhook for contact not linked to scoped inbox' do
+        other_inbox = create(:inbox, account: account)
+        create(:webhook, account: account, inbox: other_inbox, subscriptions: ['contact_created'])
+
+        expect(WebhookJob).not_to receive(:perform_later)
+
         listener.contact_created(contact_event)
       end
     end

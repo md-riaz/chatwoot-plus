@@ -47,6 +47,8 @@ export const FEATURE_FLAGS = {
   ADVANCED_SEARCH: 'advanced_search',
   CONVERSATION_REQUIRED_ATTRIBUTES: 'conversation_required_attributes',
   CONVERSATION_UNREAD_COUNTS: 'conversation_unread_counts',
+  KANBAN: 'kanban',
+  PRIVATE_NOTE_COLLABORATION: 'private_note_collaboration',
 };
 
 export const PREMIUM_FEATURES = [

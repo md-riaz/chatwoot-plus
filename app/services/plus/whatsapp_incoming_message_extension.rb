@@ -141,8 +141,7 @@ module Plus::WhatsappIncomingMessageExtension
       message.status = status[:status]
     end
     if status[:status] == 'failed' && status[:errors].present?
-      error = status[:errors]&.first
-      message.external_error = "#{error[:code]}: #{error[:title]}"
+      message.external_error = status_error_message(status[:errors]&.first)
       message.conversation.open! unless message.conversation.open?
     end
     message.save!

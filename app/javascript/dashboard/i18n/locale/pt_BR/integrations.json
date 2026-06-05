@@ -61,6 +61,10 @@
             "INBOX_UPDATED": "Caixa de entrada atualizada"
           }
         },
+        "INBOX": {
+          "LABEL": "Caixa de entrada",
+          "ALL_INBOXES": "Todas as caixas de entrada"
+        },
         "NAME": {
           "LABEL": "Nome do Webhook",
           "PLACEHOLDER": "Informe o nome do webhook"

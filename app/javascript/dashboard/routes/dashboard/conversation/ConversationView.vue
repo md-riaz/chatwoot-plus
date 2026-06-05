@@ -101,6 +101,24 @@ export default {
     conversationId() {
       this.fetchConversationIfUnavailable();
     },
+    '$route.query.messageId'(messageId, oldMessageId) {
+      if (
+        !messageId ||
+        messageId === oldMessageId ||
+        Number(this.conversationId) !== Number(this.currentChat.id)
+      ) {
+        return;
+      }
+
+      this.$store
+        .dispatch('setActiveChat', {
+          data: this.currentChat,
+          after: messageId,
+        })
+        .then(() => {
+          emitter.emit(BUS_EVENTS.SCROLL_TO_MESSAGE, { messageId });
+        });
+    },
   },
 
   created() {

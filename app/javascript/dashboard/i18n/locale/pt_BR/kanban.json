@@ -1,11 +1,8 @@
 {
   "KANBAN": {
-    "PAYWALL": {
-      "TITLE": "Faça upgrade para usar o Kanban",
-      "DESCRIPTION": "O recurso Kanban requer uma assinatura Chatwoot Plus.",
-      "UPGRADE_PROMPT": "Assine o Chatwoot Plus para acessar funis Kanban, gerenciamento de tarefas e automação de fluxo de trabalho.",
-      "NON_ADMIN_MESSAGE": "O recurso Kanban não está disponível no seu plano atual. Entre em contato com o administrador para fazer o upgrade.",
-      "UPGRADE_NOW": "Fazer upgrade"
+    "FEATURE_DISABLED": {
+      "TITLE": "Kanban está desativado",
+      "DESCRIPTION": "O Kanban está desativado para esta conta no momento. Entre em contato com o administrador para ativar este recurso."
     }
   }
 }

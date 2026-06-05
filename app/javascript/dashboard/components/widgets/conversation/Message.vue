@@ -28,6 +28,7 @@ import { emitter } from 'shared/helpers/mitt';
 // stores and apis
 import { mapGetters } from 'vuex';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 export default {
   components: {
@@ -200,6 +201,24 @@ export default {
     isAnInstagramStory() {
       return this.contentAttributes.image_type === 'story_mention';
     },
+    canUsePrivateNoteCollaboration() {
+      return this.isFeatureEnabledonAccount(
+        this.accountId,
+        FEATURE_FLAGS.PRIVATE_NOTE_COLLABORATION
+      );
+    },
+    canReplyToMessage() {
+      if (this.data.private) {
+        return this.canUsePrivateNoteCollaboration;
+      }
+      return this.inboxSupportsReplyTo.outgoing;
+    },
+    canRenderReplyToMessage() {
+      if (this.data.private) {
+        return this.canUsePrivateNoteCollaboration;
+      }
+      return this.inboxSupportsReplyTo.incoming;
+    },
     contextMenuEnabledOptions() {
       return {
         copy: this.hasText,
@@ -215,7 +234,7 @@ export default {
           (!this.isFailed || !this.isProcessing) &&
           !this.isMessageDeleted &&
           this.hasText,
-        replyTo: !this.data.private && this.inboxSupportsReplyTo.outgoing,
+        replyTo: this.canReplyToMessage,
       };
     },
     hideDeleteMessageForAgents() {
@@ -381,8 +400,10 @@ export default {
         bubble: this.isBubble,
         'is-private': this.data.private,
         'is-unsupported': this.isUnsupported,
-        'is-image': !this.shouldHideDeletedMedia && this.hasMediaAttachment('image'),
-        'is-video': !this.shouldHideDeletedMedia && this.hasMediaAttachment('video'),
+        'is-image':
+          !this.shouldHideDeletedMedia && this.hasMediaAttachment('image'),
+        'is-video':
+          !this.shouldHideDeletedMedia && this.hasMediaAttachment('video'),
         'is-text': this.hasText,
         'is-from-bot': this.isSentByBot,
         'is-failed': this.isFailed,
@@ -658,7 +679,7 @@ export default {
         />
         <InstagramStoryReply v-if="storyUrl" :story-url="storyUrl" />
         <BubbleReplyTo
-          v-if="inReplyToMessageId && inboxSupportsReplyTo.incoming"
+          v-if="inReplyToMessageId && canRenderReplyToMessage"
           :message="inReplyToMessage"
           :message-id="inReplyToMessageId"
           :message-type="data.message_type"

@@ -176,12 +176,23 @@ export default {
       if (!senderId) return {};
       return this.$store.getters['contacts/getContact'](senderId);
     },
+    canUsePrivateNoteCollaboration() {
+      return this.isFeatureEnabledonAccount(
+        this.accountId,
+        FEATURE_FLAGS.PRIVATE_NOTE_COLLABORATION
+      );
+    },
     shouldShowReplyToMessage() {
-      return (
-        this.inReplyTo?.id &&
+      const canShowChannelReply =
         !this.isPrivate &&
         this.inboxHasFeature(INBOX_FEATURES.REPLY_TO) &&
-        !this.is360DialogWhatsAppChannel &&
+        !this.is360DialogWhatsAppChannel;
+      const canShowPrivateNoteReply =
+        this.isPrivate && this.canUsePrivateNoteCollaboration;
+
+      return (
+        this.inReplyTo?.id &&
+        (canShowChannelReply || canShowPrivateNoteReply) &&
         !this.copilot.isActive.value
       );
     },

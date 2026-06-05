@@ -54,7 +54,7 @@ class WebhookListener < BaseListener
   def contact_created(event)
     contact, account = extract_contact_and_account(event)
     payload = contact.webhook_data.merge(event: __method__.to_s)
-    deliver_account_webhooks(payload, account)
+    deliver_account_webhooks(payload, account, resource: contact)
   end
 
   def contact_updated(event)
@@ -63,14 +63,14 @@ class WebhookListener < BaseListener
     return if changed_attributes.blank?
 
     payload = contact.webhook_data.merge(event: __method__.to_s, changed_attributes: changed_attributes)
-    deliver_account_webhooks(payload, account)
+    deliver_account_webhooks(payload, account, resource: contact)
   end
 
   def inbox_created(event)
     inbox, account = extract_inbox_and_account(event)
     inbox_webhook_data = Inbox::EventDataPresenter.new(inbox).push_data
     payload = inbox_webhook_data.merge(event: __method__.to_s)
-    deliver_account_webhooks(payload, account)
+    deliver_account_webhooks(payload, account, inbox: inbox)
   end
 
   def inbox_updated(event)
@@ -80,7 +80,7 @@ class WebhookListener < BaseListener
 
     inbox_webhook_data = Inbox::EventDataPresenter.new(inbox).push_data
     payload = inbox_webhook_data.merge(event: __method__.to_s, changed_attributes: changed_attributes)
-    deliver_account_webhooks(payload, account)
+    deliver_account_webhooks(payload, account, inbox: inbox)
   end
 
   def conversation_typing_on(event)
@@ -107,14 +107,30 @@ class WebhookListener < BaseListener
     deliver_webhook_payloads(payload, inbox)
   end
 
-  def deliver_account_webhooks(payload, account)
+  def deliver_account_webhooks(payload, account, inbox: nil, resource: nil)
     account.webhooks.account_type.each do |webhook|
       next unless webhook.subscriptions.include?(payload[:event])
+      next unless deliver_to_webhook?(webhook, inbox: inbox, resource: resource)
 
       WebhookJob.perform_later(webhook.url, payload, :account_webhook,
                                secret: webhook.secret,
                                delivery_id: SecureRandom.uuid)
     end
+  end
+
+  def deliver_to_webhook?(webhook, inbox: nil, resource: nil)
+    return true if webhook.inbox_id.blank?
+    return webhook.inbox_id == inbox.id if inbox.present?
+
+    resource_inbox_ids(resource).include?(webhook.inbox_id)
+  end
+
+  def resource_inbox_ids(resource)
+    return [] if resource.blank?
+    return [resource.inbox_id] if resource.respond_to?(:inbox_id) && resource.inbox_id.present?
+    return resource.contact_inboxes.pluck(:inbox_id) if resource.respond_to?(:contact_inboxes)
+
+    []
   end
 
   def deliver_api_inbox_webhooks(payload, inbox)
@@ -126,7 +142,7 @@ class WebhookListener < BaseListener
   end
 
   def deliver_webhook_payloads(payload, inbox)
-    deliver_account_webhooks(payload, inbox.account)
+    deliver_account_webhooks(payload, inbox.account, inbox: inbox)
     deliver_api_inbox_webhooks(payload, inbox)
   end
 end
