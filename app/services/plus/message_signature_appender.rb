@@ -7,6 +7,11 @@ module Plus
 
       signature = conversation.inbox.additional_attributes&.dig('signature') if conversation.inbox.respond_to?(:additional_attributes)
       return content if signature.blank?
+      normalized_content = content.to_s.rstrip
+      normalized_signature = signature.to_s.rstrip
+      already_signed = normalized_content == normalized_signature ||
+                       normalized_content.end_with?("\n#{normalized_signature}")
+      return content if already_signed
 
       "#{content}\n\n#{signature}"
     end

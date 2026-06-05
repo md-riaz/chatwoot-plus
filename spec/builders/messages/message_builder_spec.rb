@@ -33,6 +33,20 @@ describe Messages::MessageBuilder do
       expect(message.content).to eq "test\n\nBest regards"
     end
 
+    context 'when the content already includes the inbox signature' do
+      let(:params) do
+        ActionController::Parameters.new({
+                                           content: "test\n\nBest regards"
+                                         })
+      end
+
+      it 'does not append the inbox signature again' do
+        message = message_builder
+
+        expect(message.content).to eq "test\n\nBest regards"
+      end
+    end
+
     context 'when the message is private' do
       let(:params) do
         ActionController::Parameters.new({
