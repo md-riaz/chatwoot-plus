@@ -803,8 +803,8 @@ export default {
           this.isAUnoapiChannel ||
           this.is360DialogWhatsAppChannel;
         // When users send messages containing both text and attachments on Instagram, Instagram treats them as separate messages.
-        // Although ViperChat combines these into a single message, Instagram sends separate echo events for each component.
-        // This can create duplicate messages in ViperChat. To prevent this issue, we'll handle text and attachments as separate messages.
+        // Although Chatwoot combines these into a single message, Instagram sends separate echo events for each component.
+        // This can create duplicate messages in Chatwoot. To prevent this issue, we'll handle text and attachments as separate messages.
         const isOnInstagram = this.isAnInstagramChannel;
         const isOnTiktok = this.isATiktokChannel;
         if ((isOnWhatsApp || isOnInstagram || isOnTiktok) && !this.isPrivate) {

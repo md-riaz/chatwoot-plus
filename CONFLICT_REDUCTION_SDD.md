@@ -4,18 +4,24 @@
 Reduce future upstream Chatwoot merge conflicts while preserving Plus functionality already integrated in this branch.
 
 ## Evidence
-Current branch compared with `origin/develop`:
+Current branch compared with `origin/develop` after conflict-reduction commits:
 
-- 508 changed files
+- 523 changed files
 - 95 modified existing files
-- 412 added files
-- Highest risk areas: WhatsApp provider/service files, shared conversation UI, inbox configuration UI, conversation store, core models, routes, dependency locks.
+- 427 added files
+- Highest risk areas remaining: dependency locks, schema, `ConfigurationPage.vue`, `ReplyBox.vue`, `MessagesView.vue`, conversation store mutations, core models, Docker/build files.
+Reduced high-risk files:
+- `app/services/whatsapp/providers/whatsapp_cloud_service.rb`: +1/-0
+- `app/services/whatsapp/incoming_message_base_service.rb`: +2/-0
+- `config/routes.rb`: +7/-0
+- `app/javascript/dashboard/store/modules/conversations/actions.js`: +36/-41
 
-Fork pattern comparison:
+Fork pattern comparison checked against freshly fetched probe branches:
 
-- Best pattern: `probe/omnisett-develop` — small, additive, namespaced, minimal hooks.
-- Avoid pattern: `probe/vipertec-4.13.0` / old broad fork style — many core overwrites.
-- Current branch should move toward Plus-owned services, child components, initializers, and route modules.
+- `probe/omnisett-develop`: 46 changed files, 28 modified, 18 added. Best pattern: additive `omni_ai` namespace, initializers, small route/controller hooks.
+- `probe/clairton-uno`: 180 changed files, 121 modified, 58 added. Mixed pattern: good additive provider files, but high-risk shared UI/store/provider changes.
+- `probe/vipertec-4.13.0`: 4241 changed files, 3463 modified, 687 added. Worst pattern: product fork with broad upstream overwrites.
+- Current branch moved toward the Omnisett pattern for the highest-risk hotspots by using Plus-owned services, child components, action modules, and route draw files.
 
 ## Design Principles
 1. Preserve all current Plus features.
@@ -96,7 +102,7 @@ After Phase A, the high-risk Phase B items were reduced using the same small-hoo
 - `MessagesView.vue` moved forward-selection behavior into `messagesForwarding.js` and `ForwardSelectionToolbar.vue`.
 - Conversation attachment actions moved into `actions/attachmentActions.js`.
 
-Remaining larger hotspots are mostly broader branch features not fully made hook-only in this pass: conversation store mutations, core model changes, dependency locks, and some shared conversation UI shell hooks.
+Remaining larger hotspots are broader branch features not safely removable without changing product behavior or running unavailable full CI/provider tests: conversation store mutations, core model changes, dependency locks, Docker/build files, and shared conversation UI shell hooks. Further reduction should be done feature-by-feature only when tests or live credentials prove behavior preservation.
 
 ## Acceptance
 Phase A is complete when:
