@@ -1,9 +1,6 @@
 <script>
 import { ref, provide, useTemplateRef } from 'vue';
 import { useElementSize } from '@vueuse/core';
-
-import MessageApi from '../../../api/inbox/message';
-
 // composable
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useLabelSuggestions } from 'dashboard/composables/useLabelSuggestions';
@@ -13,10 +10,9 @@ import { useSnakeCase } from 'dashboard/composables/useTransformKeys';
 import ReplyBox from './ReplyBox.vue';
 import MessageList from 'next/message/MessageList.vue';
 import ConversationLabelSuggestion from './conversation/LabelSuggestion.vue';
-import ForwardMessagesModal from './ForwardMessagesModal.vue';
+import ForwardSelectionToolbar from './ForwardSelectionToolbar.vue';
 import Banner from 'dashboard/components/ui/Banner.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
-import Button from 'dashboard/components-next/button/Button.vue';
 import ResizableEditorWrapper from './ResizableEditorWrapper.vue';
 
 // stores and apis
@@ -24,6 +20,7 @@ import { mapGetters } from 'vuex';
 
 // mixins
 import inboxMixin, { INBOX_FEATURES } from 'shared/mixins/inboxMixin';
+import messagesForwarding from './mixins/messagesForwarding';
 
 // utils
 import { emitter } from 'shared/helpers/mitt';
@@ -46,15 +43,14 @@ import { INBOX_TYPES } from 'dashboard/helper/inbox';
 export default {
   components: {
     Banner,
-    Button,
     ConversationLabelSuggestion,
-    ForwardMessagesModal,
+    ForwardSelectionToolbar,
     MessageList,
     ReplyBox,
     ResizableEditorWrapper,
     Spinner,
   },
-  mixins: [inboxMixin],
+  mixins: [inboxMixin, messagesForwarding],
   setup() {
     const isPopOutReplyBox = ref(false);
     const conversationPanelRef = ref(null);
@@ -104,11 +100,6 @@ export default {
       isProgrammaticScroll: false,
       messageSentSinceOpened: false,
       labelSuggestions: [],
-      forwardSelection: {
-        isActive: false,
-        selectedMessageIds: [],
-      },
-      showForwardModal: false,
     };
   },
 
@@ -270,24 +261,6 @@ export default {
 
       return { incoming, outgoing };
     },
-    isForwardSelectionActive() {
-      return this.forwardSelection.isActive;
-    },
-    forwardSelectedMessages() {
-      if (!this.forwardSelection.isActive) {
-        return [];
-      }
-      const selectedIds = this.forwardSelection.selectedMessageIds;
-      if (!selectedIds.length) {
-        return [];
-      }
-      return this.getMessages.filter(message =>
-        selectedIds.includes(message.id)
-      );
-    },
-    forwardSelectionCount() {
-      return this.forwardSelection.selectedMessageIds.length;
-    },
   },
 
   watch: {
@@ -308,7 +281,7 @@ export default {
     emitter.on(BUS_EVENTS.MESSAGE_SENT, () => {
       this.messageSentSinceOpened = true;
     });
-    emitter.on(BUS_EVENTS.FORWARD_MESSAGES, this.onForwardMessagesStart);
+    this.registerForwardingBusListener();
   },
 
   mounted() {
@@ -369,7 +342,7 @@ export default {
     },
     removeBusListeners() {
       emitter.off(BUS_EVENTS.SCROLL_TO_MESSAGE, this.onScrollToMessage);
-      emitter.off(BUS_EVENTS.FORWARD_MESSAGES, this.onForwardMessagesStart);
+      this.removeForwardingBusListener();
     },
     onScrollToMessage({ messageId = '' } = {}) {
       this.$nextTick(() => {
@@ -383,52 +356,6 @@ export default {
         }
       });
       this.makeMessagesRead();
-    },
-    onForwardMessagesStart({ messageId } = {}) {
-      if (!messageId) {
-        return;
-      }
-      this.forwardSelection.isActive = true;
-      this.forwardSelection.selectedMessageIds = [messageId];
-    },
-    toggleForwardSelection(messageId) {
-      if (!this.forwardSelection.isActive) {
-        return;
-      }
-      const selectedIds = this.forwardSelection.selectedMessageIds;
-      const index = selectedIds.indexOf(messageId);
-      if (index === -1) {
-        selectedIds.push(messageId);
-      } else {
-        selectedIds.splice(index, 1);
-      }
-      if (!selectedIds.length) {
-        this.cancelForwardSelection();
-      }
-    },
-    cancelForwardSelection() {
-      this.forwardSelection.isActive = false;
-      this.forwardSelection.selectedMessageIds = [];
-      this.showForwardModal = false;
-    },
-    openForwardModal() {
-      if (!this.forwardSelection.selectedMessageIds.length) {
-        return;
-      }
-      this.showForwardModal = true;
-    },
-    onForwardCompleted(conversation) {
-      this.cancelForwardSelection();
-      if (!conversation || !conversation.id) {
-        return;
-      }
-      this.$router.push({
-        name: 'inbox_conversation',
-        params: {
-          accountId: this.currentAccountId,
-          conversation_id: conversation.id,
-        },
-      });
     },
     addScrollListener() {
       this.conversationPanel = this.$el.querySelector('.conversation-panel');
@@ -530,29 +457,6 @@ export default {
       await this.$store.dispatch('sendMessageWithData', payload);
     },
 
-    async getInReplyToMessage(parentMessage) {
-      if (!parentMessage) return {};
-      const inReplyToMessageId = parentMessage.content_attributes?.in_reply_to;
-      if (!inReplyToMessageId) return {};
-      let replyToMessage = this.currentChat?.messages.find(message => {
-        if (message.id === inReplyToMessageId) {
-          return true;
-        }
-        return false;
-      });
-      if (!replyToMessage) {
-        const params = {
-          conversationId: this.currentChat.id,
-          after: inReplyToMessageId - 1,
-          before: inReplyToMessageId + 1,
-        };
-        const {
-          data: { payload },
-        } = await MessageApi.getPreviousMessages(params);
-        replyToMessage = payload[0];
-      }
-      return replyToMessage;
-    },
     toggleReplyEditorSize() {
       this.resizableEditorWrapperRef?.toggleEditorExpand?.();
     },
@@ -584,42 +488,17 @@ export default {
         :banner-message="$t('CONVERSATION.OLD_INSTAGRAM_INBOX_REPLY_BANNER')"
       />
     </div>
-    <ForwardMessagesModal
-      v-if="isForwardSelectionActive"
+    <ForwardSelectionToolbar
       v-model:show="showForwardModal"
+      :active="isForwardSelectionActive"
       :selected-messages="forwardSelectedMessages"
       :conversation-id="currentChat.id"
+      :selected-count="forwardSelectionCount"
       @forwarded="onForwardCompleted"
       @close="cancelForwardSelection"
+      @cancel="cancelForwardSelection"
+      @open="openForwardModal"
     />
-    <div
-      v-if="isForwardSelectionActive"
-      class="flex items-center justify-between mx-2 mt-2 mb-1 rounded-lg bg-n-alpha-2 px-3 py-2"
-    >
-      <p class="m-0 text-xs font-medium text-n-slate-12">
-        {{
-          $t('CONVERSATION.FORWARD_MESSAGES.SELECTED_COUNT', {
-            count: forwardSelectionCount,
-          })
-        }}
-      </p>
-      <div class="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          color="slate"
-          size="xs"
-          :label="$t('CONVERSATION.FORWARD_MESSAGES.CANCEL')"
-          @click="cancelForwardSelection"
-        />
-        <Button
-          color="blue"
-          size="xs"
-          :disabled="forwardSelectionCount === 0"
-          :label="$t('CONVERSATION.FORWARD_MESSAGES.ACTION_LABEL')"
-          @click="openForwardModal"
-        />
-      </div>
-    </div>
     <MessageList
       ref="conversationPanelRef"
       class="conversation-panel flex-shrink flex-grow basis-px flex flex-col overflow-y-auto relative h-full m-0 pb-4"

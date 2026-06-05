@@ -34,7 +34,6 @@ import {
 import WhatsappTemplates from './WhatsappTemplates/Modal.vue';
 import ScheduledMessageModal from 'dashboard/routes/dashboard/conversation/scheduledMessages/ScheduledMessageModal.vue';
 import ContentTemplates from './ContentTemplates/ContentTemplatesModal.vue';
-import conversationApi from 'dashboard/api/inbox/conversation';
 import { MESSAGE_MAX_LENGTH } from 'shared/helpers/MessageTypeHelper';
 import inboxMixin, { INBOX_FEATURES } from 'shared/mixins/inboxMixin';
 import { INBOX_TYPES } from 'dashboard/helper/inbox';
@@ -59,13 +58,12 @@ import {
 import { useCopilotReply } from 'dashboard/composables/useCopilotReply';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { isFileTypeAllowedForChannel } from 'shared/helpers/FileHelper';
+import replyBoxGroupMentions from './mixins/replyBoxGroupMentions';
+import replyBoxPlusActions from './mixins/replyBoxPlusActions';
 
 import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
 import { LocalStorage } from 'shared/helpers/localStorage';
 import { emitter } from 'shared/helpers/mitt';
-
-const GROUP_CONTACT_MENTION_REGEX =
-  /\[@([^\]]+)\]\(mention:\/\/group[_-]contact\/(\d+)\/([^)]+)\)|mention:\/\/group[_-]contact\/(\d+)\/([^\s)]+)/g;
 
 const EmojiInput = defineAsyncComponent(
   () => import('shared/components/emoji/EmojiInput.vue')
@@ -94,7 +92,13 @@ export default {
     CopilotEditorSection,
     CopilotReplyBottomPanel,
   },
-  mixins: [inboxMixin, fileUploadMixin, keyboardEventListenerMixins],
+  mixins: [
+    inboxMixin,
+    fileUploadMixin,
+    keyboardEventListenerMixins,
+    replyBoxGroupMentions,
+    replyBoxPlusActions,
+  ],
   props: {
     popOutReplyBox: {
       type: Boolean,
@@ -131,12 +135,10 @@ export default {
   data() {
     return {
       message: '',
-      showScheduledMessageModal: false,
       inReplyTo: {},
       isFocused: false,
       showEmojiPicker: false,
       attachedFiles: [],
-      attachedContacts: [],
       isRecordingAudio: false,
       recordingAudioState: '',
       recordingAudioDurationText: '',
@@ -147,22 +149,16 @@ export default {
       doAutoSaveDraft: () => {},
       showWhatsAppTemplatesModal: false,
       showContentTemplatesModal: false,
-      showContactAttachmentModal: false,
-      showStickerPicker: false,
       updateEditorSelectionWith: '',
       undefinedVariableMessage: '',
       showMentions: false,
       showUserMentions: false,
-      showGroupMentions: false,
       showCannedMenu: false,
       showVariablesMenu: false,
       newConversationModalActive: false,
       showArticleSearchPopover: false,
       hasRecordedAudio: false,
       copilotAcceptedMessages: {},
-      groupMentionContacts: [],
-      isLoadingGroupMentionContacts: false,
-      groupMentionFetchTimeout: null,
     };
   },
   computed: {
@@ -179,13 +175,6 @@ export default {
       const senderId = this.currentChat?.meta?.sender?.id;
       if (!senderId) return {};
       return this.$store.getters['contacts/getContact'](senderId);
-    },
-    canUseGroupMentions() {
-      return (
-        this.currentChat?.group &&
-        this.isAUnoapiChannel &&
-        !this.isOnPrivateNote
-      );
     },
     shouldShowReplyToMessage() {
       return (
@@ -506,14 +495,9 @@ export default {
 
       this.fetchAndSetReplyTo();
     },
-    showGroupMentions(value) {
-      if (value) this.fetchGroupMentionContacts(this.groupMentionSearchTerm());
-      if (!value) this.groupMentionContacts = [];
-    },
     message() {
       // Autosave the current message draft.
       this.doAutoSaveDraft();
-      if (this.showGroupMentions) this.debouncedFetchGroupMentionContacts();
     },
     // When moving from one conversation to another, the store may not have the
     // list of all the messages. A fetch is subsequently made to get the messages.
@@ -569,7 +553,6 @@ export default {
     emitter.on(CMD_AI_ASSIST, this.executeCopilotAction);
   },
   unmounted() {
-    clearTimeout(this.groupMentionFetchTimeout);
     document.removeEventListener('paste', this.onPaste);
     document.removeEventListener('keydown', this.handleKeyEvents);
     emitter.off(BUS_EVENTS.TOGGLE_REPLY_TO_MESSAGE, this.onReplyToMessage);
@@ -581,111 +564,6 @@ export default {
     emitter.off(CMD_AI_ASSIST, this.executeCopilotAction);
   },
   methods: {
-    groupMentionSearchTerm(message = this.message) {
-      const match = message.match(/(?:^|\s)@([^\s@]*)$/);
-      return match ? match[1] : '';
-    },
-    debouncedFetchGroupMentionContacts() {
-      clearTimeout(this.groupMentionFetchTimeout);
-      this.groupMentionFetchTimeout = setTimeout(() => {
-        this.fetchGroupMentionContacts(this.groupMentionSearchTerm());
-      }, 250);
-    },
-    async fetchGroupMentionContacts(query = '') {
-      const normalizedQuery = query.trim();
-      if (normalizedQuery.length < 2) {
-        this.groupMentionContacts = [];
-        return;
-      }
-
-      if (!this.canUseGroupMentions || this.isLoadingGroupMentionContacts) {
-        this.groupMentionContacts = [];
-        return;
-      }
-
-      this.isLoadingGroupMentionContacts = true;
-      try {
-        const { data } = await conversationApi.fetchGroupContacts(
-          this.currentChat.id,
-          1,
-          normalizedQuery
-        );
-        this.groupMentionContacts = (data.payload || [])
-          .map(member => this.normalizeGroupMentionContact(member))
-          .filter(contact => contact.id && contact.bsuid);
-      } finally {
-        this.isLoadingGroupMentionContacts = false;
-      }
-    },
-    normalizeGroupMentionContact(member = {}) {
-      const contact = member.contact || {};
-      const metadata = member.metadata || {};
-      const phoneNumber =
-        contact.phone_number?.replace(/\D/g, '') ||
-        metadata.wa_id?.replace(/\D/g, '') ||
-        (!member.participant_identifier?.includes('@')
-          ? member.participant_identifier?.replace(/\D/g, '')
-          : '');
-      const bsuid =
-        contact.bsuid ||
-        metadata.user_id ||
-        metadata.lid ||
-        (metadata.jid?.endsWith('@lid') ? metadata.jid : '') ||
-        phoneNumber;
-      const name =
-        contact.name ||
-        contact.whatsapp_username ||
-        metadata.name ||
-        member.participant_identifier ||
-        bsuid;
-
-      return {
-        id: contact.id,
-        bsuid,
-        name,
-        displayName: name,
-        whatsapp_username: contact.whatsapp_username,
-        phone_number: contact.phone_number,
-        thumbnail: contact.thumbnail,
-      };
-    },
-    groupMentionAttributesFor(message = '') {
-      if (!this.canUseGroupMentions || !message) return [];
-
-      const mentionsByContactId = new Map(
-        this.groupMentionContacts.map(contact => [
-          contact.id?.toString(),
-          contact,
-        ])
-      );
-
-      return Array.from(message.matchAll(GROUP_CONTACT_MENTION_REGEX)).flatMap(
-        match => {
-          const contactId = match[2] || match[4];
-          const mentionName = match[3] || match[5] || match[1];
-          const contact = mentionsByContactId.get(contactId);
-          if (!contact?.bsuid) return [];
-
-          return {
-            contact_id: contact.id,
-            name: decodeURIComponent(mentionName || ''),
-            bsuid: contact.bsuid,
-          };
-        }
-      );
-    },
-    withGroupMentionsInPayload(payload, message = payload.message) {
-      const groupMentions = this.groupMentionAttributesFor(message);
-      if (!groupMentions.length) return payload;
-
-      return {
-        ...payload,
-        contentAttributes: {
-          ...(payload.contentAttributes || {}),
-          group_mentions: groupMentions,
-        },
-      };
-    },
     getDraftKey(
       conversationId = this.conversationIdByRoute,
       replyType = this.replyType
@@ -913,49 +791,6 @@ export default {
     hideContentTemplatesModal() {
       this.showContentTemplatesModal = false;
     },
-    openContactAttachmentModal() {
-      this.showContactAttachmentModal = true;
-    },
-    hideContactAttachmentModal() {
-      this.showContactAttachmentModal = false;
-    },
-    setAttachedContacts(contacts) {
-      this.attachedContacts = contacts;
-      this.hideContactAttachmentModal();
-    },
-    removeAttachedContact(contactId) {
-      this.attachedContacts = this.attachedContacts.filter(
-        contact => contact.id !== contactId
-      );
-    },
-    showStickerPickerModal() {
-      // eslint-disable-next-line no-console
-      console.info('[StickerPicker] open modal', {
-        conversationId: this.currentChat?.id,
-        inboxId: this.inboxId,
-      });
-      this.showStickerPicker = true;
-    },
-    hideStickerPickerModal() {
-      // eslint-disable-next-line no-console
-      console.info('[StickerPicker] close modal');
-      this.showStickerPicker = false;
-    },
-    sendStickerMessage(sticker) {
-      // eslint-disable-next-line no-console
-      console.info('[StickerPicker] send message', {
-        conversationId: this.currentChat.id,
-        stickerId: sticker.id,
-      });
-      this.sendMessage({
-        conversationId: this.currentChat.id,
-        content_type: 'sticker',
-        content_attributes: {
-          sticker_id: sticker.id,
-          sticker_url: sticker.file_url,
-        },
-      });
-    },
     confirmOnSendReply() {
       if (this.isReplyButtonDisabled) {
         return;
@@ -1159,13 +994,6 @@ export default {
       this.resetReplyToMessage();
       this.resetAudioRecorderInput();
     },
-    openScheduleModal() {
-      this.showScheduledMessageModal = true;
-    },
-    onScheduledMessageCreated() {
-      this.clearMessage();
-      this.showScheduledMessageModal = false;
-    },
     clearEmailField() {
       this.ccEmails = '';
       this.bccEmails = '';
@@ -1257,23 +1085,6 @@ export default {
     },
     removeAttachment(attachments) {
       this.attachedFiles = attachments;
-    },
-    serializeAttachedContact(contact) {
-      const fullName =
-        contact.formattedName ||
-        contact.name ||
-        [contact.firstName, contact.lastName].filter(Boolean).join(' ') ||
-        '';
-      const [firstName, ...lastNameParts] = fullName.split(' ').filter(Boolean);
-
-      return {
-        id: contact.id,
-        formatted_name: fullName,
-        first_name: firstName || fullName,
-        last_name: lastNameParts.join(' ') || '',
-        phone_number: contact.phoneNumber || contact.phone_number || '',
-        email: contact.email || '',
-      };
     },
     setReplyToInPayload(payload) {
       if (this.inReplyTo?.id) {
@@ -1697,7 +1508,7 @@ export default {
         :message="message"
         :portal-slug="connectedPortalSlug"
         :new-conversation-modal-active="newConversationModalActive"
-        :show-schedule-options="true"
+        show-schedule-options
         @open-contact-picker="openContactAttachmentModal"
         @toggle-sticker-picker="showStickerPickerModal"
         @select-whatsapp-template="openWhatsappTemplateModal"
@@ -1745,9 +1556,9 @@ export default {
       :inbox-id="inbox.id"
       :initial-content="message"
       :initial-attachment="attachedFiles[0]"
-      @update:show="val => showScheduledMessageModal = val"
+      @update:show="val => (showScheduledMessageModal = val)"
       @close="showScheduledMessageModal = false"
-      @scheduledMessageCreated="onScheduledMessageCreated"
+      @scheduled-message-created="onScheduledMessageCreated"
     />
 
     <woot-confirm-modal
