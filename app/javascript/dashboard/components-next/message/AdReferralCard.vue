@@ -27,11 +27,13 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-// Meta does not name the platform on the referral payload itself;
-// the cleanest signal we have is the host of source_url. Short links
-// like fb.me are owned by Meta and used for Facebook ads.
 const sourcePlatform = computed(() => {
-  const url = String(props.referral?.source_url || '');
+  const platform = String(props.referral?.source_platform || '').toLowerCase();
+  if (['facebook', 'instagram'].includes(platform)) return platform;
+
+  const url = String(
+    props.referral?.source_url || props.referral?.referer_uri || ''
+  );
   if (/(^|\.)instagram\.com\b/i.test(url)) return 'instagram';
   if (/(^|\.)(facebook\.com|fb\.com|fb\.me)\b/i.test(url)) return 'facebook';
   return 'unknown';
@@ -67,9 +69,20 @@ const sourceIdLabel = computed(() => {
 });
 
 const headline = computed(() => String(props.referral?.headline || '').trim());
-const body = computed(() => String(props.referral?.body || '').trim());
-const sourceId = computed(() => String(props.referral?.source_id || '').trim());
-const sourceUrl = computed(() => props.referral?.source_url || '');
+const body = computed(() =>
+  String(props.referral?.body || props.referral?.ref || '').trim()
+);
+const sourceId = computed(() =>
+  String(
+    props.referral?.source_id ||
+      props.referral?.ad_id ||
+      props.referral?.post_id ||
+      ''
+  ).trim()
+);
+const sourceUrl = computed(
+  () => props.referral?.source_url || props.referral?.referer_uri || ''
+);
 
 // CTWA payloads are inconsistent across Meta versions — try the
 // modern keys first, then media_url when media_type is image, then

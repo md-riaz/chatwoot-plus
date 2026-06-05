@@ -99,11 +99,11 @@ const replyToPreview = computed(() => {
   return t('CONVERSATION.REPLY_MESSAGE_NOT_FOUND');
 });
 
-// Surface the Click-to-WhatsApp ad referral block (persisted by
-// Whatsapp::IncomingMessageBaseService#process_referral) on the very
-// first inbound bubble of an ad-originated conversation. Outbound and
-// activity messages never carry a referral, so we gate by message type
-// to keep the contract narrow.
+// Surface Meta ad referral blocks persisted on supported inbound channels.
+// WhatsApp CTWA, Facebook Messenger ads, and Instagram ads use different
+// payload keys, so AdReferralCard maps each verified key explicitly.
+// Outbound and activity messages never carry a referral, so we gate by
+// message type to keep the contract narrow.
 const adReferral = computed(() => {
   if (messageType.value !== MESSAGE_TYPES.INCOMING) return null;
   const referral = contentAttributes.value?.referral;
@@ -111,8 +111,12 @@ const adReferral = computed(() => {
   const hasIdentifyingField =
     referral.headline ||
     referral.body ||
+    referral.ref ||
     referral.source_url ||
+    referral.referer_uri ||
     referral.source_id ||
+    referral.ad_id ||
+    referral.post_id ||
     referral.image_url ||
     referral.image ||
     referral.media_url ||

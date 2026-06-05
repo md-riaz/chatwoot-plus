@@ -165,29 +165,35 @@ Forward Facebook/Instagram comments to an Omni AI backend and expose comment man
 
 ---
 
-## 5. Click-to-WhatsApp ad referral cards
+## 5. Meta ad referral cards
 
 ### Purpose
-Show CTWA ad referral data inline in message bubbles.
+Show ad referral data inline in message bubbles for supported Meta channels:
+
+- WhatsApp Click-to-WhatsApp ads
+- Facebook Messenger ads
+- Instagram ads
 
 ### Prerequisites
-- WhatsApp Cloud/UnoAPI message containing Meta `referral` payload.
-- Conversation opened from a click-to-WhatsApp ad.
+- Inbound message payload contains Meta `referral` data.
+- Conversation opened from a WhatsApp, Messenger, or Instagram ad.
 
 ### Steps
-1. Trigger a CTWA ad click.
-2. Send first inbound WhatsApp message.
+1. Trigger a WhatsApp CTWA, Messenger ad, or Instagram ad click.
+2. Send the first inbound message from the customer.
 3. Open the conversation in Chatwoot.
-4. Inspect first message bubble.
+4. Inspect the first inbound message bubble.
 
 ### Expected result
 - Inline ad referral card appears when `message.content_attributes.referral` exists.
-- Card shows safe ad details such as headline/body/source/image.
+- Card shows verified Meta keys such as headline/body/source/ad id/post id/image.
 - Standard 1-to-1 messages without referral do not show the card.
 
 ### Verified in deployment
 - Component and i18n present.
-- Live CTWA payload not verified because Meta ad referral event is required.
+- WhatsApp CTWA persistence exists.
+- Messenger/Instagram referral persistence added through Plus-owned extension modules.
+- Live Meta ad payloads are not Playwright-verified because Meta ad events and provider credentials are required.
 
 ---
 
