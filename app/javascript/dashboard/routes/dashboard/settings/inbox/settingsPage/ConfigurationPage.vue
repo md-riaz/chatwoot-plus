@@ -9,10 +9,10 @@ import SmtpSettings from '../SmtpSettings.vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
 import NextButton from 'dashboard/components-next/button/Button.vue';
-import TextArea from 'next/textarea/TextArea.vue';
 import WhatsappReauthorize from '../channels/whatsapp/Reauthorize.vue';
 import UnoapiConfiguration from './UnoapiConfiguration.vue';
-import { sanitizeAllowedDomains } from 'dashboard/helper/URLHelper';
+import InboxSignatureSettings from './components/InboxSignatureSettings.vue';
+import WebWidgetConfigurationExtras from './components/WebWidgetConfigurationExtras.vue';
 
 export default {
   components: {
@@ -22,9 +22,10 @@ export default {
     ImapSettings,
     SmtpSettings,
     NextButton,
-    TextArea,
     WhatsappReauthorize,
     UnoapiConfiguration,
+    InboxSignatureSettings,
+    WebWidgetConfigurationExtras,
   },
   mixins: [inboxMixin],
   props: {
@@ -39,15 +40,10 @@ export default {
   data() {
     return {
       hmacMandatory: false,
-      allowMobileWebview: false,
       whatsAppInboxAPIKey: '',
       isRequestingReauthorization: false,
       isSyncingTemplates: false,
-      allowedDomains: '',
-      isUpdatingAllowedDomains: false,
       isSettingDefaults: false,
-      signature: '',
-      isUpdatingSignature: false,
     };
   },
   validations: {
@@ -71,9 +67,6 @@ export default {
     inbox() {
       this.setDefaults();
     },
-    allowMobileWebview() {
-      if (!this.isSettingDefaults) this.handleMobileWebviewFlag();
-    },
     hmacMandatory() {
       if (!this.isSettingDefaults && this.isAWebWidgetInbox)
         this.handleHmacFlag();
@@ -86,11 +79,6 @@ export default {
     setDefaults() {
       this.isSettingDefaults = true;
       this.hmacMandatory = this.inbox.hmac_mandatory || false;
-      this.allowMobileWebview = (
-        this.inbox.selected_feature_flags || []
-      ).includes('allow_mobile_webview');
-      this.allowedDomains = this.inbox.allowed_domains || '';
-      this.signature = this.inbox.additional_attributes?.signature || '';
       this.$nextTick(() => {
         this.isSettingDefaults = false;
       });
@@ -111,48 +99,6 @@ export default {
         useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
       } catch (error) {
         useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
-      }
-    },
-    async handleMobileWebviewFlag() {
-      try {
-        const currentFlags = this.inbox.selected_feature_flags || [];
-        const selectedFlags = this.allowMobileWebview
-          ? [...currentFlags, 'allow_mobile_webview']
-          : currentFlags.filter(f => f !== 'allow_mobile_webview');
-
-        const payload = {
-          id: this.inbox.id,
-          formData: false,
-          channel: {
-            selected_feature_flags: selectedFlags,
-          },
-        };
-        await this.$store.dispatch('inboxes/updateInbox', payload);
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
-      } catch (error) {
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
-      }
-    },
-    async updateAllowedDomains() {
-      this.isUpdatingAllowedDomains = true;
-      const sanitizedAllowedDomains = sanitizeAllowedDomains(
-        this.allowedDomains
-      );
-      try {
-        const payload = {
-          id: this.inbox.id,
-          formData: false,
-          channel: {
-            allowed_domains: sanitizedAllowedDomains,
-          },
-        };
-        await this.$store.dispatch('inboxes/updateInbox', payload);
-        this.allowedDomains = sanitizedAllowedDomains;
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
-      } catch (error) {
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
-      } finally {
-        this.isUpdatingAllowedDomains = false;
       }
     },
     async updateWhatsAppInboxAPIKey() {
@@ -190,27 +136,6 @@ export default {
         useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
       }
     },
-    async updateSignature() {
-      this.isUpdatingSignature = true;
-      try {
-        const payload = {
-          id: this.inbox.id,
-          formData: false,
-          channel: {
-            additional_attributes: {
-              ...this.inbox.additional_attributes,
-              signature: this.signature,
-            },
-          },
-        };
-        await this.$store.dispatch('inboxes/updateInbox', payload);
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
-      } catch (error) {
-        useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
-      } finally {
-        this.isUpdatingSignature = false;
-      }
-    },
   },
 };
 </script>
@@ -246,41 +171,7 @@ export default {
       </SettingsFieldSection>
     </div>
     <div v-else-if="isAWebWidgetInbox">
-      <div class="space-y-4">
-        <SettingsToggleSection
-          :header="$t('INBOX_MGMT.SETTINGS_POPUP.ALLOWED_DOMAINS.TITLE')"
-          :description="
-            $t('INBOX_MGMT.SETTINGS_POPUP.ALLOWED_DOMAINS.DESCRIPTION')
-          "
-          hide-toggle
-        >
-          <template #editor>
-            <TextArea
-              v-model="allowedDomains"
-              :placeholder="
-                $t('INBOX_MGMT.SETTINGS_POPUP.ALLOWED_DOMAINS.PLACEHOLDER')
-              "
-              auto-height
-              resize
-              class="w-full [&>div]:!bg-transparent [&>div]:!border-none [&>div]:!border-0 [&>div]:px-0 [&>div]:pb-0 [&>div]:pt-0"
-            />
-            <div class="mt-3 flex justify-end">
-              <NextButton
-                :label="$t('INBOX_MGMT.SETTINGS_POPUP.UPDATE')"
-                :is-loading="isUpdatingAllowedDomains"
-                @click="updateAllowedDomains"
-              />
-            </div>
-          </template>
-        </SettingsToggleSection>
-        <SettingsToggleSection
-          v-model="allowMobileWebview"
-          :header="$t('INBOX_MGMT.SETTINGS_POPUP.ALLOW_MOBILE_WEBVIEW.LABEL')"
-          :description="
-            $t('INBOX_MGMT.SETTINGS_POPUP.ALLOW_MOBILE_WEBVIEW.SUBTITLE')
-          "
-        />
-      </div>
+      <WebWidgetConfigurationExtras :inbox="inbox" />
 
       <SettingsAccordion
         :title="$t('INBOX_MGMT.SETTINGS_POPUP.IDENTITY_VALIDATION.TITLE')"
@@ -481,30 +372,7 @@ export default {
         class="hidden"
       />
     </div>
-    <div class="mt-6 border-t border-n-slate-3 pt-6">
-      <SettingsToggleSection
-        :header="$t('INBOX_MGMT.SETTINGS_POPUP.SIGNATURE.TITLE')"
-        :description="$t('INBOX_MGMT.SETTINGS_POPUP.SIGNATURE.DESCRIPTION')"
-        hide-toggle
-      >
-        <template #editor>
-          <TextArea
-            v-model="signature"
-            :placeholder="$t('INBOX_MGMT.SETTINGS_POPUP.SIGNATURE.PLACEHOLDER')"
-            auto-height
-            resize
-            class="w-full [&>div]:!bg-transparent [&>div]:!border-none [&>div]:!border-0 [&>div]:px-0 [&>div]:pb-0 [&>div]:pt-0"
-          />
-          <div class="mt-3 flex justify-end">
-            <NextButton
-              :label="$t('INBOX_MGMT.SETTINGS_POPUP.UPDATE')"
-              :is-loading="isUpdatingSignature"
-              @click="updateSignature"
-            />
-          </div>
-        </template>
-      </SettingsToggleSection>
-    </div>
+    <InboxSignatureSettings :inbox="inbox" />
   </div>
 </template>
 
