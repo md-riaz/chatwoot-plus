@@ -2,7 +2,7 @@ version: '3'
 
 services:
   base: &base
-    image: chatwoot-plus:latest
+    image: ${CHATWOOT_PLUS_IMAGE:-chatwoot-plus:latest}
     build:
       context: .
       dockerfile: ./docker/Dockerfile
@@ -21,6 +21,7 @@ services:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
+      - UNOAPI_API_KEY=${UNOAPI_API_KEY:-${SECRET_KEY_BASE}}
     entrypoint: docker/entrypoints/rails.sh
     command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
     restart: always
@@ -34,6 +35,7 @@ services:
       - NODE_ENV=production
       - RAILS_ENV=production
       - INSTALLATION_ENV=docker
+      - UNOAPI_API_KEY=${UNOAPI_API_KEY:-${SECRET_KEY_BASE}}
     command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
     restart: always
 
@@ -45,21 +47,21 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${POSTGRES_DATABASE:-chatwoot_production}
-      - POSTGRES_USER=${POSTGRES_USERNAME:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - POSTGRES_DB=chatwoot
+      - POSTGRES_USER=postgres
+      # Please provide your own password.
+      - POSTGRES_PASSWORD=
 
   redis:
     image: redis:alpine
     restart: always
-    command: ["sh", "-c", "redis-server --requirepass \"$$REDIS_PASSWORD\""]
+    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
     env_file: .env
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
     volumes:
       - redis_data:/data
     ports:
       - '127.0.0.1:6379:6379'
+
 
   unoapi:
     image: ${UNOAPI_IMAGE:-unoapi-cloud:latest}
@@ -67,12 +69,11 @@ services:
     restart: always
     environment:
       - PORT=9876
-      - UNOAPI_AUTH_TOKEN=${UNOAPI_API_KEY:?UNOAPI_API_KEY is required}
+      - UNOAPI_AUTH_TOKEN=${UNOAPI_API_KEY:-${SECRET_KEY_BASE}}
     ports:
       - '127.0.0.1:9876:9876'
     volumes:
       - unoapi_data:/app/data
-
 volumes:
   storage_data:
   postgres_data:
