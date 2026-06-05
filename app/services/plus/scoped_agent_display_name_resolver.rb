@@ -36,8 +36,11 @@ module Plus
     def account_user
       return @account_user if defined?(@account_user)
 
-      @account_user = user.account_users.find { |account_user| account_user.account_id == account.id } ||
-                      AccountUser.find_by(account_id: account.id, user_id: user.id)
+      @account_user = if user.account_users.loaded?
+                        user.account_users.find { |account_user| account_user.account_id == account.id }
+                      else
+                        AccountUser.find_by(account_id: account.id, user_id: user.id)
+                      end
     end
 
     def inbox_member

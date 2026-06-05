@@ -57,6 +57,7 @@ const saveAccountDisplayName = async agent => {
     const response = await ScopedAgentDisplayNamesAPI.updateAccount({
       userId: agent.id,
       displayName: accountDisplayNames[agent.id] || '',
+      inboxId: selectedInboxId.value || undefined,
     });
     resetRecord(accountDisplayNames, response.data.account_display_names);
     resetRecord(inboxDisplayNames, response.data.inbox_display_names);

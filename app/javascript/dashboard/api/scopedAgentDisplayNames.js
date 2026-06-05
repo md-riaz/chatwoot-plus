@@ -10,10 +10,11 @@ class ScopedAgentDisplayNames extends ApiClient {
     return axios.get(this.url, { params: { inbox_id: inboxId } });
   }
 
-  updateAccount({ userId, displayName }) {
+  updateAccount({ userId, displayName, inboxId }) {
     return axios.patch(`${this.url}/account`, {
       user_id: userId,
       display_name: displayName,
+      inbox_id: inboxId,
     });
   }
 
