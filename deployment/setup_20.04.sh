@@ -396,8 +396,16 @@ function setup_chatwoot() {
   sed -i -e '/REDIS_URL/ s/=.*/=redis:\/\/localhost:6379/' .env
   sed -i -e '/POSTGRES_HOST/ s/=.*/=localhost/' .env
   if [ "$INSTALL_UNOAPI" == "yes" ]; then
-    sed -i -e '/UNOAPI_URL/ s|=.*|=http://localhost:9876|' .env
-    sed -i -e "/UNOAPI_API_KEY/ s/=.*/=$unoapi_key/" .env
+    if grep -q "UNOAPI_URL" .env; then
+      sed -i -e '/UNOAPI_URL/ s|=.*|=http://localhost:9876|' .env
+    else
+      echo "UNOAPI_URL=http://localhost:9876" >> .env
+    fi
+    if grep -q "UNOAPI_API_KEY" .env; then
+      sed -i -e "/UNOAPI_API_KEY/ s/=.*/=$unoapi_key/" .env
+    else
+      echo "UNOAPI_API_KEY=$unoapi_key" >> .env
+    fi
   fi
   sed -i -e '/POSTGRES_USERNAME/ s/=.*/=chatwoot/' .env
   sed -i -e "/POSTGRES_PASSWORD/ s/=.*/=$pg_pass/" .env
@@ -437,17 +445,27 @@ function install_unoapi_service() {
   [ "$INSTALL_UNOAPI" != "yes" ] && return
 
   apt-get install -y unzip
-  local unoapi_zip_url="${UNOAPI_LINUX_ZIP_URL:-https://github.com/clairton/unoapi-cloud/archive/refs/heads/main.zip}"
+  local unoapi_zip_url="${UNOAPI_LINUX_ZIP_URL:-https://github.com/clairton/unoapi-cloud/archive/refs/tags/v2.11.5.zip}"
 
   sudo -i -u chatwoot << EOF
+  set -e
   rm -rf unoapi unoapi.zip unoapi-src
   wget -q "$unoapi_zip_url" -O unoapi.zip
   mkdir unoapi-src
   unzip -q unoapi.zip -d unoapi-src
-  mv unoapi-src/* unoapi
+  extracted_dir=\$(find unoapi-src -mindepth 1 -maxdepth 1 -type d | sort | head -n 1)
+  if [ -z "\$extracted_dir" ]; then
+    echo "Failed to find extracted UnoAPI directory" >&2
+    exit 1
+  fi
+  mv "\$extracted_dir" unoapi
   rm -rf unoapi-src unoapi.zip
   cd unoapi
-  pnpm i
+  if [ -f yarn.lock ]; then
+    corepack yarn install --frozen-lockfile
+  else
+    pnpm install
+  fi
   pnpm build
 EOF
   cp /home/chatwoot/chatwoot/deployment/unoapi.service /etc/systemd/system/unoapi.service
@@ -1014,8 +1032,8 @@ function upgrade() {
   get_cw_version
   echo "Upgrading Chatwoot to v$CW_VERSION (branch: $BRANCH)"
 
-  # Warning for non-master branch upgrades
-  if [ "$BRANCH" != "master" ]; then
+  # Warning for branch-specific upgrades
+  if [ "$BRANCH" != "$CHATWOOT_DEFAULT_BRANCH" ]; then
     cat << EOF
 
 ⚠️  WARNING: Branch-specific upgrades are EXPERIMENTAL
