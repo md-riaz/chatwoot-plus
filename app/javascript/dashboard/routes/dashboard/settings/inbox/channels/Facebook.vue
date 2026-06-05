@@ -293,7 +293,10 @@ export default {
             </label>
           </div>
           <div class="w-full text-right">
-            <NextButton :label="$t('INBOX_MGMT.ADD.FB.CREATE_INBOX')" />
+            <NextButton
+              type="submit"
+              :label="$t('INBOX_MGMT.ADD.FB.CREATE_INBOX')"
+            />
           </div>
         </div>
       </form>

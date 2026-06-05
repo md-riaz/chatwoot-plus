@@ -354,6 +354,12 @@ export default {
         } else {
           this.scrollToBottom();
         }
+
+        if (messageId && this.$route.query.messageId) {
+          const query = { ...this.$route.query };
+          delete query.messageId;
+          this.$router.replace({ path: this.$route.path, query });
+        }
       });
       this.makeMessagesRead();
     },

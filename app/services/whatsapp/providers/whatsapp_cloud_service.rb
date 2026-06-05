@@ -136,7 +136,12 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
 
   def error_message(response)
     # https://developers.facebook.com/docs/whatsapp/cloud-api/support/error-codes/#sample-response
-    response.parsed_response&.dig('error', 'message')
+    error = response.parsed_response&.dig('error')
+    return if error.blank?
+
+    error = error.with_indifferent_access
+    reason = [error[:message], error.dig(:error_data, :details)].compact_blank.uniq.join(' - ')
+    [error[:error_subcode].presence || error[:code], reason].compact_blank.join(': ')
   end
 
   def voice_message?(type, attachment)

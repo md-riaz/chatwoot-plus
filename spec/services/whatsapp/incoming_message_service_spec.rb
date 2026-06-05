@@ -273,14 +273,14 @@ describe Whatsapp::IncomingMessageService do
       it 'update status message to failed' do
         status_params = {
           'statuses' => [{ 'recipient_id' => from, 'id' => from, 'status' => 'failed',
-                           'errors' => [{ 'code': 123, 'title': 'abc' }] }]
+                           'errors' => [{ 'code': 123, 'title': 'abc', 'error_data': { 'details': 'def' } }] }]
         }.with_indifferent_access
 
         message = Message.find_by!(source_id: from)
         expect(message.status).to eq('sent')
         described_class.new(inbox: whatsapp_channel.inbox, params: status_params).perform
         expect(message.reload.status).to eq('failed')
-        expect(message.external_error).to eq('123: abc')
+        expect(message.external_error).to eq('123: abc - def')
       end
 
       it 'will not throw error if unsupported status' do

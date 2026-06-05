@@ -325,7 +325,29 @@ describe Whatsapp::Providers::WhatsappCloudService do
         service.send(:handle_error, error_response_object, message)
 
         expect(message.reload.status).to eq('failed')
-        expect(message.reload.external_error).to eq(error_message)
+        expect(message.reload.external_error).to eq('100: Invalid message format')
+      end
+    end
+
+    context 'when Cloud error includes nested details and subcode' do
+      let(:error_response) do
+        {
+          'error' => {
+            'message' => 'Message failed to send',
+            'code' => 100,
+            'error_subcode' => 2494010,
+            'error_data' => {
+              'details' => 'Invalid phone number format'
+            }
+          }
+        }
+      end
+
+      it 'stores richer provider failure reason' do
+        service.send(:handle_error, error_response_object, message)
+
+        expect(message.reload.status).to eq('failed')
+        expect(message.reload.external_error).to eq('2494010: Message failed to send - Invalid phone number format')
       end
     end
 

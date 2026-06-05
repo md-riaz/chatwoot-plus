@@ -6,6 +6,7 @@ import { getI18nKey } from 'dashboard/routes/dashboard/settings/helper/settingsH
 import { copyTextToClipboard } from 'shared/helpers/clipboard';
 import { useAlert } from 'dashboard/composables';
 import { useConfig } from 'dashboard/composables/useConfig';
+import { mapGetters } from 'vuex';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
 const { EXAMPLE_WEBHOOK_URL } = wootConstants;
@@ -61,6 +62,7 @@ export default {
       url: this.value.url || '',
       name: this.value.name || '',
       subscriptions: this.value.subscriptions || [],
+      inboxId: this.value.inbox_id || '',
       secretVisible: false,
       supportedWebhookEvents: inboxEventsEnabled
         ? [...SUPPORTED_WEBHOOK_EVENTS, 'inbox_updated']
@@ -68,6 +70,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters({ inboxes: 'inboxes/getInboxes' }),
     hasSecret() {
       return !!this.value.secret;
     },
@@ -88,6 +91,7 @@ export default {
       this.$emit('submit', {
         url: this.url,
         name: this.name,
+        inbox_id: this.inboxId || null,
         subscriptions: this.subscriptions,
       });
     },
@@ -124,6 +128,17 @@ export default {
           name="name"
           :placeholder="webhookNameInputPlaceholder"
         />
+      </label>
+      <label>
+        {{ $t('INTEGRATION_SETTINGS.WEBHOOK.FORM.INBOX.LABEL') }}
+        <select v-model="inboxId" name="inbox_id">
+          <option value="">
+            {{ $t('INTEGRATION_SETTINGS.WEBHOOK.FORM.INBOX.ALL_INBOXES') }}
+          </option>
+          <option v-for="inbox in inboxes" :key="inbox.id" :value="inbox.id">
+            {{ inbox.name }}
+          </option>
+        </select>
       </label>
       <label v-if="hasSecret" class="mb-4">
         {{ $t('INTEGRATION_SETTINGS.WEBHOOK.SECRET.LABEL') }}

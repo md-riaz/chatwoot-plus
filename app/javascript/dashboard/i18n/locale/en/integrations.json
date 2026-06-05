@@ -61,6 +61,10 @@
             "INBOX_UPDATED": "Inbox updated"
           }
         },
+        "INBOX": {
+          "LABEL": "Inbox",
+          "ALL_INBOXES": "All inboxes"
+        },
         "NAME": {
           "LABEL": "Webhook Name",
           "PLACEHOLDER": "Enter the name of the webhook"
