@@ -86,6 +86,18 @@ Plan:
 - Extract scheduled-message modal state second.
 - Extract payload construction only after tests pass.
 
+## Completed extended refactors
+
+After Phase A, the high-risk Phase B items were reduced using the same small-hook pattern:
+
+- `app/services/whatsapp/providers/whatsapp_cloud_service.rb` now keeps only a one-line `Plus::WhatsappCloudProviderExtension` prepend hook versus `origin/develop`; custom provider behavior lives in `app/services/plus/whatsapp_cloud_provider_extension.rb`.
+- `app/services/whatsapp/incoming_message_base_service.rb` now keeps only a one-line `Plus::WhatsappIncomingMessageExtension` prepend hook plus load line versus `origin/develop`; custom incoming behavior lives in `app/services/plus/whatsapp_incoming_message_extension.rb`.
+- `ReplyBox.vue` moved group mentions and Plus actions into `replyBoxGroupMentions.js` and `replyBoxPlusActions.js`.
+- `MessagesView.vue` moved forward-selection behavior into `messagesForwarding.js` and `ForwardSelectionToolbar.vue`.
+- Conversation attachment actions moved into `actions/attachmentActions.js`.
+
+Remaining larger hotspots are mostly broader branch features not fully made hook-only in this pass: conversation store mutations, core model changes, dependency locks, and some shared conversation UI shell hooks.
+
 ## Acceptance
 Phase A is complete when:
 
