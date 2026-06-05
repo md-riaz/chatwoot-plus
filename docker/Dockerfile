@@ -1,6 +1,6 @@
 # pre-build stage
-FROM node:24-slim as node
-FROM ruby:3.4.9-slim AS pre-builder
+FROM node:24-alpine as node
+FROM ruby:3.4.4-alpine3.21 AS pre-builder
 
 ARG NODE_VERSION="24.13.0"
 ARG PNPM_VERSION="10.2.0"
@@ -24,20 +24,16 @@ ENV NODE_OPTIONS ${NODE_OPTIONS}
 
 ENV BUNDLE_PATH="/gems"
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk update && apk add --no-cache \
   openssl \
   tar \
-  build-essential \
+  build-base \
   tzdata \
+  postgresql-dev \
   postgresql-client \
-  libpq-dev \
   git \
   curl \
-  xz-utils \
-  pkg-config \
-  libyaml-dev \
-  libvips-dev \
-  && rm -rf /var/lib/apt/lists/* \
+  xz \
   && mkdir -p /var/app \
   && gem install bundler -v "$BUNDLER_VERSION"
 
@@ -62,23 +58,18 @@ WORKDIR /app
 
 COPY Gemfile Gemfile.lock ./
 
-# install native build dependencies for gems with C/Rust extensions
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential \
-  gcc \
-  make \
-  libssl-dev \
-  g++ \
-  linux-libc-dev \
-  xz-utils \
-  pkg-config \
-  libyaml-dev \
-  libvips-dev \
-  libclang-dev \
-  && rm -rf /var/lib/apt/lists/*
+# natively compile grpc and protobuf to support alpine musl (dialogflow-docker workflow)
+# https://github.com/googleapis/google-cloud-ruby/issues/13306
+# adding xz as nokogiri was failing to build libxml
+# https://github.com/chatwoot/chatwoot/issues/4045
+RUN apk update && apk add --no-cache build-base musl ruby-full ruby-dev gcc make musl-dev openssl openssl-dev g++ linux-headers xz vips
+RUN bundle config set --local force_ruby_platform true
 
-# Install all locked gems in the builder so asset precompile can resolve every locked platform.
-RUN BUNDLE_WITHOUT= bundle install -j 4 -r 3
+# Do not install development or test gems in production
+RUN if [ "$RAILS_ENV" = "production" ]; then \
+  bundle config set without 'development test'; bundle install -j 4 -r 3; \
+  else bundle install -j 4 -r 3; \
+  fi
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm i
@@ -91,7 +82,7 @@ RUN mkdir -p /app/log
 
 # generate production assets if production environment
 RUN if [ "$RAILS_ENV" = "production" ]; then \
-  SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled BUNDLE_WITHOUT=development:test bundle exec rake assets:precompile \
+  SECRET_KEY_BASE=precompile_placeholder RAILS_LOG_TO_STDOUT=enabled bundle exec rake assets:precompile \
   && rm -rf spec node_modules tmp/cache; \
   fi
 
@@ -105,7 +96,7 @@ RUN rm -rf /gems/ruby/3.4.0/cache/*.gem \
   && rm .gitignore
 
 # final build stage
-FROM ruby:3.4.9-slim
+FROM ruby:3.4.4-alpine3.21
 
 ARG NODE_VERSION="24.13.0"
 ARG PNPM_VERSION="10.2.0"
@@ -122,28 +113,28 @@ ENV EXECJS_RUNTIME ${EXECJS_RUNTIME}
 ARG RAILS_SERVE_STATIC_FILES=true
 ENV RAILS_SERVE_STATIC_FILES ${RAILS_SERVE_STATIC_FILES}
 
+ARG BUNDLE_FORCE_RUBY_PLATFORM=1
+ENV BUNDLE_FORCE_RUBY_PLATFORM ${BUNDLE_FORCE_RUBY_PLATFORM}
 
 ARG RAILS_ENV=production
 ENV RAILS_ENV ${RAILS_ENV}
 ENV BUNDLE_PATH="/gems"
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  build-essential \
+RUN apk update && apk add --no-cache \
+  build-base \
   openssl \
   tzdata \
   postgresql-client \
   imagemagick \
   git \
-  libvips42 \
-  && rm -rf /var/lib/apt/lists/* \
+  vips \
   && gem install bundler -v "$BUNDLER_VERSION"
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 
 RUN if [ "$RAILS_ENV" != "production" ]; then \
-  apt-get update && apt-get install -y --no-install-recommends curl \
-  && rm -rf /var/lib/apt/lists/* \
+  apk add --no-cache curl \
   && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
   && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
   && npm install -g pnpm@${PNPM_VERSION} \

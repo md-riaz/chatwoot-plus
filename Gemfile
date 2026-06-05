@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.4.9'
+ruby '3.4.4'
 
 ##-- base gems for rails --##
 gem 'rack-cors', '2.0.0', require: 'rack/cors'
@@ -33,7 +33,7 @@ gem 'haikunator'
 # Template parsing safely
 gem 'liquid'
 # Parse Markdown to HTML
-gem 'commonmarker', '~> 0.23.11'
+gem 'commonmarker'
 # Validate Data against JSON Schema
 gem 'json_schemer'
 # used in swagger build
@@ -235,7 +235,7 @@ group :development do
 
   # profiling
   gem 'rack-mini-profiler', '>= 3.2.0', require: false
-  gem 'stackprof', platforms: :ruby unless Gem.win_platform?
+  gem 'stackprof'
   # Should install the associated chrome extension to view query logs
   gem 'meta_request', '>= 0.8.3'
 
