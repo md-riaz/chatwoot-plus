@@ -5,6 +5,8 @@ class Api::V1::Accounts::Conversations::GroupController < Api::V1::Accounts::Con
   def show; end
 
   def update
+    return render_group_operation_not_supported unless provider_service.respond_to?(:update_group)
+
     response = provider_service.update_group(
       group_id: @conversation.group_source_id,
       subject: group_params[:subject],
@@ -38,7 +40,11 @@ class Api::V1::Accounts::Conversations::GroupController < Api::V1::Accounts::Con
   end
 
   def provider_service
-    @provider_service ||= @conversation.inbox.channel.provider_service
+    @provider_service ||= @conversation.inbox.channel.try(:provider_service)
+  end
+
+  def render_group_operation_not_supported
+    render json: { error: 'Group operations not supported for this channel' }, status: :unprocessable_entity
   end
 
   def group_params

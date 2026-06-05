@@ -3,8 +3,10 @@ class Api::V1::Accounts::Conversations::GroupsController < Api::V1::Accounts::Ba
 
   def create
     return render json: { error: 'Inbox must be an UnoAPI WhatsApp inbox' }, status: :unprocessable_entity unless unoapi_whatsapp_inbox?
+    return render_group_operation_not_supported unless group_provider_service.respond_to?(:create_group)
 
-    response = @inbox.channel.provider_service.create_group(
+
+    response = group_provider_service.create_group(
       subject: group_params[:subject],
       description: group_params[:description],
       participants: participant_payloads,
@@ -90,6 +92,14 @@ class Api::V1::Accounts::Conversations::GroupsController < Api::V1::Accounts::Ba
       inbox: @inbox,
       contact_attributes: { email: group_id, name: subject, avatar_url: group_picture }
     ).perform
+  end
+
+  def group_provider_service
+    @group_provider_service ||= @inbox.channel.try(:provider_service)
+  end
+
+  def render_group_operation_not_supported
+    render json: { error: 'Group creation not supported for this channel' }, status: :unprocessable_entity
   end
 
   def provider_error(response, fallback)

@@ -1,3 +1,18 @@
+<script>
+export default {
+  props: {
+    color: {
+      type: String,
+      default: 'currentColor',
+    },
+    size: {
+      type: [String, Number],
+      default: '20',
+    },
+  },
+};
+</script>
+
 <template>
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -11,29 +26,3 @@
     />
   </svg>
 </template>
-<script>
-export default {
-  props: {
-    color: {
-      type: String,
-      required: true,
-      default: 'currentColor',
-    },
-    size: {
-      type: [String, Number],
-      default: '20',
-    },
-  },
-
-  computed: {
-    pathSource() {
-      // To support icons with multiple paths
-      const path = this.icons[`${this.icon}-${this.type}`];
-      if (path.constructor === Array) {
-        return path;
-      }
-      return [path];
-    },
-  },
-};
-</script>

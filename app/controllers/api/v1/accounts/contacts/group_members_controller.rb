@@ -110,12 +110,12 @@ class Api::V1::Accounts::Contacts::GroupMembersController < Api::V1::Accounts::C
   end
 
   def find_own_member
-    clean = @inbox_phone_number.delete('+')
+    clean = @inbox_phone_number.to_s.delete('+')
+    phone_variants = [clean, "+#{clean}"]
     GroupMember.active
                .where(group_contact: @contact)
                .joins(:contact)
-               .where('REPLACE(contacts.phone_number, \'+\', \'\') = ? OR RIGHT(REPLACE(contacts.phone_number, \'+\', \'\'), 8) = RIGHT(?, 8)',
-                      clean, clean)
+               .where(contacts: { phone_number: phone_variants })
                .includes(:contact)
                .first
   end

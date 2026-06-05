@@ -4,6 +4,7 @@ class Api::V1::Accounts::Contacts::GroupAdminController < Api::V1::Accounts::Con
   def leave
     authorize @contact, :update?
     channel.group_leave(@contact.identifier)
+    resolve_group_conversations
     head :ok
   rescue Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError => e
     render json: { error: e.message }, status: :unprocessable_entity

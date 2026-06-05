@@ -65,6 +65,12 @@ class ContactMergeAction
     return if @base_contact.avatar.attached?
     return unless @mergee_contact.avatar.attached?
 
-    @base_contact.avatar.attach(@mergee_contact.avatar.blob)
+    @mergee_contact.avatar.open do |tempfile|
+      @base_contact.avatar.attach(
+        io: tempfile,
+        filename: @mergee_contact.avatar.filename.to_s,
+        content_type: @mergee_contact.avatar.content_type
+      )
+    end
   end
 end

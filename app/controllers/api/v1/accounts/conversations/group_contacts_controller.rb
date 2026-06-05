@@ -11,8 +11,10 @@ class Api::V1::Accounts::Conversations::GroupContactsController < Api::V1::Accou
   def create
     participants = participant_payloads(params[:participants])
     return render json: { error: 'participants are required' }, status: :unprocessable_entity if participants.blank?
+    return render_group_operation_not_supported unless provider_service.respond_to?(:add_group_participants)
 
-    response = @conversation.inbox.channel.provider_service.add_group_participants(
+
+    response = provider_service.add_group_participants(
       group_id: @conversation.group_source_id,
       participants: participants
     )
@@ -28,6 +30,8 @@ class Api::V1::Accounts::Conversations::GroupContactsController < Api::V1::Accou
   def destroy
     participants = participant_identifiers(params[:participants])
     return head :no_content if participants.blank?
+    return render_group_operation_not_supported if @conversation.inbox.channel.provider == 'unoapi' && !provider_service.respond_to?(:remove_group_participants)
+
 
     response = remove_provider_participants(participants)
     unless provider_remove_success?(response)
@@ -64,7 +68,7 @@ class Api::V1::Accounts::Conversations::GroupContactsController < Api::V1::Accou
   def remove_provider_participants(participants)
     return unless @conversation.inbox.channel.provider == 'unoapi'
 
-    @conversation.inbox.channel.provider_service.remove_group_participants(
+    provider_service.remove_group_participants(
       group_id: @conversation.group_source_id,
       participants: participants
     )
@@ -126,6 +130,14 @@ class Api::V1::Accounts::Conversations::GroupContactsController < Api::V1::Accou
     attrs = participant.respond_to?(:to_unsafe_h) ? participant.to_unsafe_h : participant
     attrs = attrs.with_indifferent_access
     PARTICIPANT_IDENTIFIER_KEYS.filter_map { |key| attrs[key].presence }.first
+  end
+
+  def provider_service
+    @provider_service ||= @conversation.inbox.channel.try(:provider_service)
+  end
+
+  def render_group_operation_not_supported
+    render json: { error: 'Group operations not supported for this channel' }, status: :unprocessable_entity
   end
 
   def provider_error(response, fallback)

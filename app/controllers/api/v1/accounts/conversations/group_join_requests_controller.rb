@@ -3,6 +3,8 @@ class Api::V1::Accounts::Conversations::GroupJoinRequestsController < Api::V1::A
   before_action :ensure_session_group_admin
 
   def index
+    return render_group_operation_not_supported unless provider_service.respond_to?(:group_join_requests)
+
     response = provider_service.group_join_requests(@conversation.group_source_id)
     return render json: normalized_join_requests(response.parsed_response) if response.success?
 
@@ -10,6 +12,8 @@ class Api::V1::Accounts::Conversations::GroupJoinRequestsController < Api::V1::A
   end
 
   def create
+    return render_group_operation_not_supported unless provider_service.respond_to?(:approve_group_join_requests)
+
     response = provider_service.approve_group_join_requests(
       group_id: @conversation.group_source_id,
       participants: participants
@@ -20,6 +24,8 @@ class Api::V1::Accounts::Conversations::GroupJoinRequestsController < Api::V1::A
   end
 
   def destroy
+    return render_group_operation_not_supported unless provider_service.respond_to?(:reject_group_join_requests)
+
     response = provider_service.reject_group_join_requests(
       group_id: @conversation.group_source_id,
       participants: participants
@@ -32,7 +38,11 @@ class Api::V1::Accounts::Conversations::GroupJoinRequestsController < Api::V1::A
   private
 
   def provider_service
-    @provider_service ||= @conversation.inbox.channel.provider_service
+    @provider_service ||= @conversation.inbox.channel.try(:provider_service)
+  end
+
+  def render_group_operation_not_supported
+    render json: { error: 'Group join requests not supported for this channel' }, status: :unprocessable_entity
   end
 
   def participants

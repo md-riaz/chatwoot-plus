@@ -9,7 +9,7 @@ const props = defineProps({
   },
   enabledFeatures: {
     type: Object,
-    required: true,
+    default: () => ({}),
   },
 });
 
@@ -29,7 +29,7 @@ const hasTiktokConfigured = computed(() => {
 
 const isActive = computed(() => {
   const { key } = props.channel;
-  if (Object.keys(props.enabledFeatures).length === 0) {
+  if (Object.keys(props.enabledFeatures || {}).length === 0) {
     return false;
   }
   if (key === 'website') {

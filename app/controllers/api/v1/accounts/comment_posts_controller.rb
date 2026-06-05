@@ -2,6 +2,8 @@
 
 class Api::V1::Accounts::CommentPostsController < Api::V1::Accounts::BaseController
   before_action :check_authorization
+  before_action :verify_omni_ai_token, only: [:upsert]
+
 
   def index
     sort = params[:sort_by]&.to_s == 'post_date' ? :ordered_by_post_date : :ordered_by_latest_comment
@@ -62,6 +64,15 @@ class Api::V1::Accounts::CommentPostsController < Api::V1::Accounts::BaseControl
     return if action_name == 'upsert'
 
     authorize(Current.account) if defined?(authorize)
+  end
+
+  def verify_omni_ai_token
+    expected = ENV.fetch('OMNI_AI_COMMENTS_SECRET', ENV.fetch('OMNI_AI_WEBHOOK_TOKEN', ''))
+    actual = request.headers['Authorization'].to_s.delete_prefix('Bearer ').strip
+    return head :unauthorized if expected.blank? || actual.blank?
+    return if ActiveSupport::SecurityUtils.secure_compare(actual, expected)
+
+    head :unauthorized
   end
 
   def upsert_params

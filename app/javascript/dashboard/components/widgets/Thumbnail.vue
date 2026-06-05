@@ -116,7 +116,8 @@ export default {
   },
   watch: {
     src(value, oldValue) {
-      if (value !== oldValue && this.imgError) {
+      if (value !== oldValue) {
+        this.hasImageLoaded = false;
         this.imgError = false;
       }
     },
@@ -151,7 +152,7 @@ export default {
       <Avatar
         v-show="!shouldShowImage"
         :name="userNameWithoutEmoji"
-        :src="''"
+        src=""
         :class="thumbnailClass"
         :size="avatarSize"
         :rounded-full="variant === 'circle'"

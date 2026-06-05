@@ -174,7 +174,7 @@ class OmniAi::CommentsProxyController < Api::V1::Accounts::BaseController
   end
 
   def omni_ai_base_url
-    @omni_ai_base_url ||= ENV.fetch('OMNI_AI_WEBHOOK_URL', '').sub(%r{/webhooks/chatwoot\z}, '')
+    @omni_ai_base_url ||= ENV.fetch('OMNI_AI_COMMENTS_URL', ENV.fetch('OMNI_AI_WEBHOOK_URL', '')).sub(%r{/webhooks/chatwoot\z}, '')
   end
 
   def omni_ai_token
