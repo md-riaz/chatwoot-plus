@@ -218,6 +218,33 @@ RSpec.describe 'Conversation Messages API', type: :request do
         expect(message.reload.content_attributes['bcc_emails']).to be_nil
       end
 
+      context 'when deleting an outgoing WhatsApp message' do
+        let(:whatsapp_channel) do
+          create(:channel_whatsapp, account: account, provider: 'unoapi', sync_templates: false, validate_provider_config: false)
+        end
+        let(:whatsapp_conversation) { create(:conversation, account: account, inbox: whatsapp_channel.inbox) }
+        let(:whatsapp_message) do
+          create(:message, account: account, conversation: whatsapp_conversation, inbox: whatsapp_channel.inbox,
+                           message_type: :outgoing, source_id: 'wamid.123')
+        end
+
+        before do
+          create(:inbox_member, inbox: whatsapp_channel.inbox, user: agent)
+        end
+
+        it 'syncs the deletion to the WhatsApp provider' do
+          expect_any_instance_of(Channel::Whatsapp).to receive(:send_message_delete).with( # rubocop:disable RSpec/AnyInstance
+            have_attributes(id: whatsapp_message.id)
+          ).and_return(true)
+
+          delete "/api/v1/accounts/#{account.id}/conversations/#{whatsapp_conversation.display_id}/messages/#{whatsapp_message.id}",
+                 headers: agent.create_new_auth_token,
+                 as: :json
+
+          expect(response).to have_http_status(:success)
+        end
+      end
+
       it 'deletes interactive messages' do
         interactive_message = create(
           :message, message_type: :outgoing, content: 'test', content_type: 'input_select',

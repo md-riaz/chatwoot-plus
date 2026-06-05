@@ -103,6 +103,13 @@ class Channel::Whatsapp < ApplicationRecord
 
   delegate :send_message, to: :provider_service
   delegate :send_template, to: :provider_service
+
+  def send_message_delete(message)
+    return false unless provider_service.respond_to?(:send_message_update)
+
+    provider_service.send_message_update(provider_delete_payload(message))
+  end
+
   delegate :sync_templates, to: :provider_service
   delegate :media_url, to: :provider_service
   delegate :api_headers, to: :provider_service
@@ -112,6 +119,19 @@ class Channel::Whatsapp < ApplicationRecord
   rescue StandardError => e
     Rails.logger.error "[WHATSAPP] Webhook setup failed: #{e.message}"
     prompt_reauthorization!
+  end
+
+  def provider_delete_payload(message)
+    {
+      status: 'deleted',
+      source_id: message.source_id,
+      sender: { phone_number: message.sender&.phone_number },
+      conversation: {
+        group: message.conversation.group?,
+        group_source_id: message.conversation.group_source_id,
+        contact_inbox: message.conversation.contact_inbox
+      }
+    }
   end
 
   private
