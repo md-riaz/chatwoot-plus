@@ -1,6 +1,6 @@
 # Software Design Document & Implementation Plan: Decoupled Fork Integration
 
-Integrating custom features from community forks into **official Chatwoot v4.14.1** using a highly decoupled, modular architecture. 
+Integrating custom features from community forks into **official Chatwoot v4.14.1** using a highly decoupled, modular architecture.
 
 ---
 
@@ -18,9 +18,9 @@ To prevent future merge conflicts during upstream updates (e.g. upgrading to v4.
 
 All community fork remotes are configured and fetched in the local repository:
 *   `upstream`: `https://github.com/chatwoot/chatwoot.git` (baseline: `v4.14.1`)
-*   `omnisett`: `https://github.com/omnisett/chatwoot-custom.git` (tracked branch: `omnisett/develop`)
-*   `vipertec`: `https://github.com/ViperTecCorporation/chatwoot.git` (tracked branch: `vipertec/4.13.0`)
-*   `clairton`: `https://github.com/clairton/chatwoot.git` (tracked branch: `clairton/uno`)
+*   `comments-integration`: source branch for comments and CTWA referral behavior
+*   `webphone-groups`: source branch for WhatsApp groups, deleted-message sync, and SIP/WebRTC behavior
+*   `uno-provider`: source branch for UnoAPI provider behavior
 
 All custom implementations should be developed on a dedicated integration branch:
 ```bash
@@ -62,29 +62,29 @@ graph TD
 ---
 
 ### Module 1: Facebook & Instagram Comments Handling
-**Source**: `omnisett/develop`  
+**Source**: comments integration branch
 **Purpose**: Forward Facebook and Instagram comments to an external AI/reply handler (Omni-AI) and mount a comments sidebar page in the dashboard.
 
 #### Backend Architecture
 1.  **Rack Middleware Interceptor**:
-    *   **Source File**: `omnisett/develop` -> [facebook_comment_middleware.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/middleware/omni_ai/facebook_comment_middleware.rb)
+    *   **Source File**: [facebook_comment_middleware.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/middleware/omni_ai/facebook_comment_middleware.rb)
     *   **Target File**: [facebook_comment_middleware.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/middleware/omni_ai/facebook_comment_middleware.rb) (NEW)
     *   **Registration**: [omni_ai_middleware.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/config/initializers/omni_ai_middleware.rb) (NEW)
     *   **Logic**: Intercepts `POST /bot` requests. If the payload has `changes` with `field == 'feed'` and `item == 'comment'`, it parses the JSON and passes the entries to the forwarder job. The request then passes through to the normal Facebook Messenger gem handler.
 2.  **Instagram Webhook Hook**:
-    *   **Source File**: `omnisett/develop` -> `app/controllers/webhooks/instagram_controller.rb`
+    *   **Source File**: `app/controllers/webhooks/instagram_controller.rb`
     *   **Target File**: [instagram_controller.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/controllers/webhooks/instagram_controller.rb) (MODIFY)
     *   **Logic**: Add a block inside the `events` action to detect `comments` events using `OmniAi::CommentForwarder.contains_ig_comments?(entry_params)` and forward them before executing the standard DM routing.
 3.  **Forwarding Initializer**:
-    *   **Source File**: `omnisett/develop` -> `config/initializers/omni_ai_comments.rb`
+    *   **Source File**: `config/initializers/omni_ai_comments.rb`
     *   **Target File**: [omni_ai_comments.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/config/initializers/omni_ai_comments.rb) (NEW)
     *   **Logic**: Defines the `OmniAi::CommentForwarder` module to calculate payload signatures and queue `OmniAi::CommentForwardJob`.
 4.  **Forwarding Job**:
-    *   **Source File**: `omnisett/develop` -> `app/jobs/omni_ai/comment_forward_job.rb`
+    *   **Source File**: `app/jobs/omni_ai/comment_forward_job.rb`
     *   **Target File**: [comment_forward_job.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/jobs/omni_ai/comment_forward_job.rb) (NEW)
     *   **Logic**: Calls `OMNI_AI_COMMENTS_URL` via `Net::HTTP` carrying the signed payload (`X-Omni-Signature`). On success, broadcasts an `omni_comments.updated` ActionCable event.
 5.  **Proxy and Replies Controllers**:
-    *   **Source Files**: `omnisett/develop` -> `app/controllers/omni_ai/...`
+    *   **Source Files**: `app/controllers/omni_ai/...`
     *   **Target Files**:
         *   [comments_proxy_controller.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/controllers/omni_ai/comments_proxy_controller.rb) (NEW) - Proxies comments list, stats, and manual replies from the dashboard to the Omni-AI backend.
         *   [comment_replies_controller.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/controllers/omni_ai/comment_replies_controller.rb) (NEW) - Receives replies from Omni-AI and posts them to Graph API (`/{comment-id}/replies` or `/comments`).
@@ -111,7 +111,7 @@ graph TD
 
 #### Frontend Architecture
 1.  **Comments Dashboard Index**:
-    *   **Source Folder**: `omnisett/develop` -> `app/javascript/dashboard/routes/dashboard/omniComments/...`
+    *   **Source Folder**: `app/javascript/dashboard/routes/dashboard/omniComments/...`
     *   **Target Folder**: [omniComments](file:///d:/Development/laragon/cwt/chatwoot-plus/app/javascript/dashboard/routes/dashboard/omniComments) (NEW)
     *   **Logic**: Implements `OmniCommentsIndex.vue` and its routes to render the comments stream, filter dropdowns, and manual reply textareas.
 2.  **Navigation Mount**:
@@ -126,12 +126,12 @@ graph TD
 ---
 
 ### Module 2: Inline Click-to-WhatsApp (CTWA) Ad Referral Card
-**Source**: `omnisett/develop`  
+**Source**: comments integration branch
 **Purpose**: Surface Click-to-WhatsApp ad information (creatives, headline, bodies, ad ID) inline directly inside the first incoming message bubble of the conversation.
 
 #### Ingestion & Persistence
 1.  **Message Context Processing**:
-    *   **Source File**: `omnisett/develop` -> `app/services/whatsapp/incoming_message_base_service.rb`
+    *   **Source File**: `app/services/whatsapp/incoming_message_base_service.rb`
     *   **Target File**: [incoming_message_base_service.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/services/whatsapp/incoming_message_base_service.rb) (MODIFY)
     *   **Logic**: Capture Meta's incoming webhook payload `referral` and assign it to the created message:
         ```ruby
@@ -139,17 +139,17 @@ graph TD
         message.content_attributes['referral'] = processed_referral_payload
         ```
 2.  **Attribution Persistence**:
-    *   **Source File**: `omnisett/develop` -> `app/services/whatsapp/incoming_message_service_helpers.rb`
+    *   **Source File**: `app/services/whatsapp/incoming_message_service_helpers.rb`
     *   **Target File**: [incoming_message_service_helpers.rb](file:///d:/Development/laragon/cwt/chatwoot-plus/app/services/whatsapp/incoming_message_service_helpers.rb) (MODIFY)
     *   **Logic**: Capture and persist `ctwa_clid` and first-touch referral on the conversation's `additional_attributes` so it is not overwritten on thread reuse.
 
 #### UI Bubble Rendering
 1.  **Referral Card Component**:
-    *   **Source File**: `omnisett/develop` -> `app/javascript/dashboard/components-next/message/AdReferralCard.vue`
+    *   **Source File**: `app/javascript/dashboard/components-next/message/AdReferralCard.vue`
     *   **Target File**: [AdReferralCard.vue](file:///d:/Development/laragon/cwt/chatwoot-plus/app/javascript/dashboard/components-next/message/AdReferralCard.vue) (NEW)
     *   **Logic**: Decodes the referral object keys (headline, body, source_url, source_id, image_url), validates that links contain safe `http/https` protocols, and outputs an inline template with image thumbnail, title, description, and link.
 2.  **Bubble Mount**:
-    *   **Source File**: `omnisett/develop` -> `app/javascript/dashboard/components-next/message/bubbles/Base.vue`
+    *   **Source File**: `app/javascript/dashboard/components-next/message/bubbles/Base.vue`
     *   **Target File**: [Base.vue](file:///d:/Development/laragon/cwt/chatwoot-plus/app/javascript/dashboard/components-next/message/bubbles/Base.vue) (MODIFY)
     *   **Logic**: Import `AdReferralCard.vue` and mount it inline:
         ```vue
@@ -162,7 +162,7 @@ graph TD
 ---
 
 ### Module 3: WhatsApp Group Conversations & Groups Tab
-**Source**: `vipertec/4.13.0`  
+**Source**: webphone/groups integration branch
 **Purpose**: Parse, sync, and display WhatsApp group messages natively in a dedicated Groups tab.
 
 #### Data Schema Updates
@@ -187,7 +187,7 @@ graph TD
 
 #### Payload Normalization & Ingestion
 1.  **Group Inbound Handlers**:
-    *   **Source Files**: `vipertec/4.13.0` -> `app/services/whatsapp/...`
+    *   **Source Files**: `app/services/whatsapp/...`
     *   **Target Files**: WhatsApp incoming payload normalizers.
     *   **Logic**: Detect if `messages[0].group_id` exists in the payload. If so, find or create the conversation using `inbox_id + group_source_id` with `group: true` and `group_title`.
 2.  **Sender Normalization**:
@@ -198,7 +198,7 @@ graph TD
 
 #### UI Integrations
 1.  **Groups Tab**:
-    *   **Source File**: `vipertec/4.13.0` -> `app/javascript/dashboard/components/ChatList.vue`
+    *   **Source File**: `app/javascript/dashboard/components/ChatList.vue`
     *   **Target File**: [ChatList.vue](file:///d:/Development/laragon/cwt/chatwoot-plus/app/javascript/dashboard/components/ChatList.vue) (MODIFY)
     *   **Logic**: Add a "Groups" tab/filter to display only group conversations (where `conversation.group === true`).
 2.  **Sender Display**:
@@ -208,7 +208,7 @@ graph TD
 ---
 
 ### Module 4: Preserved Deleted Messages & Sync
-**Source**: `vipertec/4.13.0`  
+**Source**: webphone/groups integration branch
 **Purpose**: Allow agents to read original texts of deleted messages and propagate deletions back to WhatsApp/UnoAPI.
 
 #### Inbound Interception
@@ -218,7 +218,7 @@ graph TD
         *   Read the account's setting `preserve_deleted_message_content` (stored in the account's `settings` hash).
         *   If `true`, instead of deleting the message record or changing the content to "Message deleted", preserve the original `content` string, but set a flag in `message.content_attributes['deleted_by_sender'] = true`.
 2.  **Frontend Render**:
-    *   **Source File**: `vipertec/4.13.0` -> `app/javascript/dashboard/components-next/message/bubbles/Text/Index.vue`
+    *   **Source File**: `app/javascript/dashboard/components-next/message/bubbles/Text/Index.vue`
     *   **Target File**: [Index.vue](file:///d:/Development/laragon/cwt/chatwoot-plus/app/javascript/dashboard/components-next/message/bubbles/Text/Index.vue) (MODIFY)
     *   **Logic**: If `message.content_attributes.deleted_by_sender` is true, render a warning label "This message was deleted by the sender" above the text.
 
@@ -314,12 +314,12 @@ graph TD
 ---
 
 ### Module 7: Uno Premium Health Check
-**Source**: `vipertec/4.13.0`  
+**Source**: webphone/groups integration branch
 **Purpose**: Run a daily Sidekiq cron check to prevent self-hosted licensing limits from resetting.
 
 1.  **Health Check Job**:
     *   **Target File**: `app/jobs/internal/check_uno_premium_features_job.rb` (NEW)
-    *   **Logic**: 
+    *   **Logic**:
         ```ruby
         class Internal::CheckUnoPremiumFeaturesJob < ApplicationJob
           queue_as :scheduled_jobs
@@ -355,7 +355,7 @@ services:
   # Standard Chatwoot services: web, worker, db, redis...
 
   unoapi:
-    image: clairton/unoapi-cloud:latest
+    image: UnoAPI provider branchapi-cloud:latest
     restart: always
     environment:
       - PORT=9876

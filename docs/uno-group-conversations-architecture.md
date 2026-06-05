@@ -2,7 +2,7 @@
 
 ## Context
 
-Today ViperChat already accepts WhatsApp group messages coming from Uno API, but the
+Today the existing Uno API integration already accepts WhatsApp group messages, but the
 current implementation adapts groups into the existing one-to-one conversation
 model.
 
@@ -513,7 +513,7 @@ Recommended for official management compatibility:
 Optional/future:
 
 - `POST /groups` to create groups. This action is intentionally disabled in
-  the Chatwoot/ViperChat UI until the Baileys/WhatsApp platform support is
+  the Chatwoot UI until the Baileys/WhatsApp platform support is
   stable; current UnoAPI tests can return `rate-overlimit` even after
   participant normalization and LID-to-phone-JID fallback.
 - `GET/POST/DELETE /groups/{group_id}/join_requests`.

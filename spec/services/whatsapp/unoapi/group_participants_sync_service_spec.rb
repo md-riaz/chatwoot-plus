@@ -381,7 +381,7 @@ describe Whatsapp::Unoapi::GroupParticipantsSyncService do
   end
 
   it 'merges duplicated phone and lid participant contacts preferring the phone contact' do
-    phone_contact = create(:contact, account: whatsapp_channel.account, name: 'ViperTec')
+    phone_contact = create(:contact, account: whatsapp_channel.account, name: 'Primary Contact')
     phone_contact.update_columns(phone_number: '+5566996222471', email: '5566996222471') # rubocop:disable Rails/SkipsModelValidations
     create(:contact_inbox, inbox: whatsapp_channel.inbox, contact: phone_contact, source_id: '5566996222471')
     phone_group_contact = create(:group_contact, conversation: conversation, contact: phone_contact)
@@ -403,7 +403,7 @@ describe Whatsapp::Unoapi::GroupParticipantsSyncService do
             jid: '5566996222471@s.whatsapp.net',
             wa_id: '5566996222471',
             user_id: '11343495192601@lid',
-            name: 'ViperTec'
+            name: 'Primary Contact'
           }
         ]
       }.to_json,

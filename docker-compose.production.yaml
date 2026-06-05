@@ -62,7 +62,7 @@ services:
       - '127.0.0.1:6379:6379'
 
   unoapi:
-    image: clairton/unoapi-cloud:latest
+    image: ${UNOAPI_IMAGE:-unoapi-cloud:latest}
     platform: linux/amd64
     restart: always
     environment:

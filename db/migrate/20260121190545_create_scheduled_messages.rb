@@ -1,5 +1,5 @@
 class CreateScheduledMessages < ActiveRecord::Migration[7.1]
-  # Columns (name => cast type) the fazer-ai fork table has had since creation.
+  # Columns (name => cast type) the imported scheduled-messages table has had since creation.
   # They act as a fingerprint to tell our table apart from a scheduled_messages
   # coming from another Chatwoot version/fork, whose schema we don't know up
   # front. Nullability is intentionally not matched: 20260201162122 relaxes
@@ -55,7 +55,7 @@ class CreateScheduledMessages < ActiveRecord::Migration[7.1]
   def relocate_conflicting_table
     if fork_table?
       raise ActiveRecord::MigrationError, <<~MSG.squish
-        scheduled_messages already exists with the fazer-ai fork schema, but migration
+        scheduled_messages already exists with the imported scheduled-messages schema, but migration
         20260121190545 is missing from schema_migrations. This is an inconsistent
         database (partial restore / out-of-sync schema_migrations), not a migration
         from another Chatwoot version. Register the version manually

@@ -59,7 +59,7 @@ Create a WhatsApp inbox through UnoAPI instead of the upstream WhatsApp Cloud or
 Handle WhatsApp group messages and expose them in a dedicated **Groups** conversation tab.
 
 ### Prerequisites
-- A WhatsApp provider that supports group events, normally UnoAPI/ViperTec-derived provider support.
+- A WhatsApp provider that supports group events, normally UnoAPI-compatible provider support.
 - A real WhatsApp group message webhook payload.
 - Existing inbox connected to the provider.
 
@@ -289,10 +289,10 @@ Keep configured self-hosted premium-related installation configs from resetting.
 ## 9. Voice/webphone / SIP calling
 
 ### Purpose
-Provide browser-based voice calling using custom SIP/WebRTC support from the ViperTec fork, plus upstream-style Twilio/WhatsApp call UI pieces.
+Provide browser-based voice calling using custom SIP/WebRTC support, plus upstream-style Twilio/WhatsApp call UI pieces.
 
 ### Source evidence
-The full SIP/WebRTC implementation was found in `ViperTecCorporation/chatwoot` branch `4.13.0`, including:
+The full SIP/WebRTC implementation includes:
 
 - `app/javascript/dashboard/api/channel/voice/customVoiceClient.js`
 - `app/javascript/dashboard/components/widgets/VoiceAutoRegister.vue`

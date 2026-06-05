@@ -18,10 +18,10 @@ Reduced high-risk files:
 
 Fork pattern comparison checked against freshly fetched probe branches:
 
-- `probe/omnisett-develop`: 46 changed files, 28 modified, 18 added. Best pattern: additive `omni_ai` namespace, initializers, small route/controller hooks.
-- `probe/clairton-uno`: 180 changed files, 121 modified, 58 added. Mixed pattern: good additive provider files, but high-risk shared UI/store/provider changes.
-- `probe/vipertec-4.13.0`: 4241 changed files, 3463 modified, 687 added. Worst pattern: product fork with broad upstream overwrites.
-- Current branch moved toward the Omnisett pattern for the highest-risk hotspots by using Plus-owned services, child components, action modules, and route draw files.
+- `probe/comments-integration`: 46 changed files, 28 modified, 18 added. Best pattern: additive `omni_ai` namespace, initializers, small route/controller hooks.
+- `probe/uno-provider`: 180 changed files, 121 modified, 58 added. Mixed pattern: good additive provider files, but high-risk shared UI/store/provider changes.
+- `probe/webphone-groups`: 4241 changed files, 3463 modified, 687 added. Worst pattern: product fork with broad upstream overwrites.
+- Current branch moved toward the additive integration pattern for the highest-risk hotspots by using Plus-owned services, child components, action modules, and route draw files.
 
 ## Design Principles
 1. Preserve all current Plus features.
