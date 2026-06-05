@@ -410,6 +410,7 @@ Rails.application.routes.draw do
 
           resources :upload, only: [:create]
 
+          draw :plus_scoped_agent_display_name_routes
           draw :plus_omni_ai_routes
         end
       end

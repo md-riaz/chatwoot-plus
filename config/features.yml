@@ -251,3 +251,6 @@
 - name: private_note_collaboration
   display_name: Private Note Collaboration
   enabled: true
+- name: scoped_agent_display_name
+  display_name: Scoped Agent Display Name
+  enabled: true

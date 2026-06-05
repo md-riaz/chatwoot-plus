@@ -71,6 +71,12 @@ const hasAdvancedAssignment = computed(() => {
     FEATURE_FLAGS.ADVANCED_ASSIGNMENT
   );
 });
+const hasScopedAgentDisplayName = computed(() => {
+  return isFeatureEnabledonAccount.value(
+    accountId.value,
+    FEATURE_FLAGS.SCOPED_AGENT_DISPLAY_NAME
+  );
+});
 
 const hasConversationUnreadCounts = computed(() => {
   return isFeatureEnabledonAccount.value(
@@ -679,6 +685,16 @@ const menuItems = computed(() => {
           icon: 'i-lucide-square-user',
           to: accountScopedRoute('agent_list'),
         },
+        ...(hasScopedAgentDisplayName.value
+          ? [
+              {
+                name: 'Settings Scoped Agent Display Names',
+                label: t('SIDEBAR.SCOPED_AGENT_DISPLAY_NAMES'),
+                icon: 'i-lucide-id-card',
+                to: accountScopedRoute('scoped_agent_display_names'),
+              },
+            ]
+          : []),
         {
           name: 'Settings Teams',
           label: t('SIDEBAR.TEAMS'),

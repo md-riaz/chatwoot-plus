@@ -18,6 +18,7 @@ class InboxMember < ApplicationRecord
   validates :inbox_id, presence: true
   validates :user_id, presence: true
   validates :user_id, uniqueness: { scope: :inbox_id }
+  validates :display_name, length: { maximum: 100 }, allow_blank: true
 
   belongs_to :user
   belongs_to :inbox

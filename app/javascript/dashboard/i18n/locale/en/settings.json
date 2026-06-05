@@ -322,6 +322,7 @@
     "CAPTAIN_SETTINGS": "Settings",
     "HOME": "Home",
     "AGENTS": "Agents",
+    "SCOPED_AGENT_DISPLAY_NAMES": "Agent Display Names",
     "AGENT_BOTS": "Bots",
     "AUDIT_LOGS": "Audit Logs",
     "INBOXES": "Inboxes",

@@ -52,6 +52,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_25_093000) do
     t.boolean "auto_offline", default: true, null: false
     t.bigint "custom_role_id"
     t.bigint "agent_capacity_policy_id"
+    t.string "display_name"
     t.index ["account_id", "user_id"], name: "uniq_user_id_per_account_id", unique: true
     t.index ["account_id"], name: "index_account_users_on_account_id"
     t.index ["agent_capacity_policy_id"], name: "index_account_users_on_agent_capacity_policy_id"
@@ -928,6 +929,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_25_093000) do
     t.integer "inbox_id", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.string "display_name"
     t.index ["inbox_id", "user_id"], name: "index_inbox_members_on_inbox_id_and_user_id", unique: true
     t.index ["inbox_id"], name: "index_inbox_members_on_inbox_id"
   end
