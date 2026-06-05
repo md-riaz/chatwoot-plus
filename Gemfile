@@ -33,7 +33,7 @@ gem 'haikunator'
 # Template parsing safely
 gem 'liquid'
 # Parse Markdown to HTML
-gem 'commonmarker'
+gem 'commonmarker', '~> 0.23.11'
 # Validate Data against JSON Schema
 gem 'json_schemer'
 # used in swagger build

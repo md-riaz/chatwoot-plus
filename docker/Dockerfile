@@ -74,6 +74,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   pkg-config \
   libyaml-dev \
   libvips-dev \
+  libclang-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # Install all locked gems in the builder so asset precompile can resolve every locked platform.
@@ -121,8 +122,6 @@ ENV EXECJS_RUNTIME ${EXECJS_RUNTIME}
 ARG RAILS_SERVE_STATIC_FILES=true
 ENV RAILS_SERVE_STATIC_FILES ${RAILS_SERVE_STATIC_FILES}
 
-ARG BUNDLE_FORCE_RUBY_PLATFORM=1
-ENV BUNDLE_FORCE_RUBY_PLATFORM ${BUNDLE_FORCE_RUBY_PLATFORM}
 
 ARG RAILS_ENV=production
 ENV RAILS_ENV ${RAILS_ENV}
