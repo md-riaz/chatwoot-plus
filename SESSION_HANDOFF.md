@@ -371,3 +371,42 @@ git push
 ```
 
 Then verify clean branch except known untracked local-only directories.
+
+## Final Completion Evidence Added Later
+
+Latest pushed commits after this handoff was first written:
+
+```text
+4746d4549 feat: add decoupled Plus scheduled messages
+aad3d6efc fix: wire remaining plus integration gaps
+0afcdb29f fix: sync WhatsApp message deletes
+4dfcb020e fix: boot production container
+0d355d5cd fix: avoid duplicate inbox signatures
+```
+
+Important current notes:
+
+- `task.md` checklist has been marked complete after current-state audit.
+- `app/services/whatsapp/providers/whatsapp_cloud_service.rb` is intentionally untouched to reduce upstream merge conflicts.
+- Decoupled scheduled-message plan requirement is now represented by:
+  - `db/migrate/20260605093000_create_plus_scheduled_messages.rb`
+  - `app/models/plus/scheduled_message.rb`
+  - `app/jobs/plus/scheduled_message_runner_job.rb`
+  - `config/schedule.yml` entry `plus_scheduled_message_runner_job`
+- Existing richer `scheduled_messages` / `recurring_scheduled_messages` UI remains in place for dashboard UX.
+- Remote deployment target:
+  - SSH / Docker context: `root@103.125.255.196`
+  - Hostname: `openclaw`
+  - Domain: `https://cwt.opc.mdriaz.com.bd/`
+  - App container: `cwplus-rails`, image `chatwoot-plus:latest`, restart policy `unless-stopped`
+  - Reverse proxy: nginx site `/etc/nginx/sites-enabled/cwt.opc.mdriaz.com.bd` -> `127.0.0.1:18000`
+  - Public HTTPS fetch returned Chatwoot HTML with title `Chatwoot`.
+  - Container-internal health check returned `HTTP 200`.
+  - Postgres has `public.plus_scheduled_messages` after remote migration.
+
+Known local-only untracked directories remain:
+
+```text
+.lean-ctx/
+old_conversation_history_with_AI/
+```
