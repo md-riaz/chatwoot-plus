@@ -287,6 +287,30 @@
           "ERROR": "Please enter a valid value.",
           "REPLACE_CONFIRM": "A token already exists. Do you want to replace it?"
         },
+        "URL": {
+          "LABEL": "UnoAPI URL",
+          "PLACEHOLDER": "https://unoapi.cloud",
+          "ERROR": "Please enter a valid URL."
+        },
+        "SEND_AGENT_NAME": {
+          "LABEL": "Send agent name",
+          "ERROR": "Please choose whether to send the agent name."
+        },
+        "IGNORE_GROUPS": {
+          "LABEL": "Ignore group messages",
+          "ERROR": "Please choose whether to ignore group messages."
+        },
+        "IGNORE_HISTORY": {
+          "LABEL": "Ignore message history",
+          "ERROR": "Please choose whether to ignore message history."
+        },
+        "WEBHOOK_SEND_NEW_MESSAGES": {
+          "LABEL": "Send new messages to webhook",
+          "ERROR": "Please choose whether to send new messages to the webhook."
+        },
+        "GENERATE_API_KEY": {
+          "LABEL": "Generate API key"
+        },
         "API_CALLBACK": {
           "TITLE": "Callback URL",
           "SUBTITLE": "You have to configure the webhook URL and the verification token in the Facebook Developer portal with the values shown below.",
