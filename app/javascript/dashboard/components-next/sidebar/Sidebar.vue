@@ -78,6 +78,10 @@ const hasScopedAgentDisplayName = computed(() => {
   );
 });
 
+const hasKanban = computed(() => {
+  return isFeatureEnabledonAccount.value(accountId.value, FEATURE_FLAGS.KANBAN);
+});
+
 const hasConversationUnreadCounts = computed(() => {
   return isFeatureEnabledonAccount.value(
     accountId.value,
@@ -396,6 +400,17 @@ const menuItems = computed(() => {
             }),
           })),
         },
+        ...(hasKanban.value
+          ? [
+              {
+                name: 'Kanban',
+                label: t('SIDEBAR.KANBAN'),
+                icon: 'i-lucide-kanban',
+                activeOn: ['kanban_view'],
+                to: accountScopedRoute('kanban_view'),
+              },
+            ]
+          : []),
       ],
     },
     {
