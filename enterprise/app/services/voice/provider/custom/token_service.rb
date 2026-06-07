@@ -44,6 +44,8 @@ class Voice::Provider::Custom::TokenService
   end
 
   def resolved_token
+    member_token = inbox_member&.webrtc_jwt
+    return member_token if member_token.present?
     return user_custom_attributes['webrtc_jwt'] if user_custom_attributes['webrtc_jwt'].present?
     return config['token'] if config['token'].present?
     return nil if config['jwt_secret'].blank?
@@ -52,7 +54,10 @@ class Voice::Provider::Custom::TokenService
   end
 
   def resolved_password
-    user_custom_attributes['webrtc_password'].presence || config['password'].presence || config['token'].presence
+    inbox_member&.webrtc_password.presence ||
+      user_custom_attributes['webrtc_password'].presence ||
+      config['password'].presence ||
+      config['token'].presence
   end
 
   def auth_type
@@ -74,7 +79,9 @@ class Voice::Provider::Custom::TokenService
   end
 
   def resolved_username
-    user_custom_attributes['webrtc_username'].presence || user.email
+    inbox_member&.webrtc_username.presence ||
+      user_custom_attributes['webrtc_username'].presence ||
+      user.email
   end
 
   def ice_servers_config
@@ -101,6 +108,10 @@ class Voice::Provider::Custom::TokenService
 
   def user_custom_attributes
     user.custom_attributes || {}
+  end
+
+  def inbox_member
+    @inbox_member ||= inbox.inbox_members.find_by(user_id: user.id)
   end
 
   def config
