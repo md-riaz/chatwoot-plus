@@ -330,7 +330,7 @@
       },
       "VOICE": {
         "TITLE": "Canal de Voz",
-        "DESC": "Integre o Twilio Voice e comece a oferecer suporte a seus clientes através de chamadas telefônicas.",
+        "DESC": "Integre Twilio ou voz SIP/WebRTC customizada e comece a oferecer suporte aos seus clientes por chamadas telefônicas.",
         "PHONE_NUMBER": {
           "LABEL": "Número de Telefone",
           "PLACEHOLDER": "Digite seu número de telefone (por exemplo, +551234567890)",
@@ -385,7 +385,7 @@
             "REQUIRED": "Este campo é obrigatório"
           },
           "SIP_OUTBOUND_PROXY": {
-            "LABEL": "Proxy SIP de saída",
+            "LABEL": "Proxy SIP de saída (opcional)",
             "PLACEHOLDER": "sip:proxy.exemplo.com;transport=wss"
           },
           "SIP_TRANSPORT": {
@@ -584,7 +584,7 @@
           },
           "VOICE": {
             "TITLE": "Voz",
-            "DESCRIPTION": "Integre com Twilio ou voz SIP customizada"
+            "DESCRIPTION": "Integre com Twilio ou voz SIP/WebRTC customizada"
           }
         }
       },
