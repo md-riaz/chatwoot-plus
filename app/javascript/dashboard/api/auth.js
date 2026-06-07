@@ -38,12 +38,22 @@ export default {
     }
     return false;
   },
-  profileUpdate({ displayName, avatar, ...profileAttributes }) {
+  profileUpdate({
+    displayName,
+    avatar,
+    customAttributes,
+    ...profileAttributes
+  }) {
     const formData = new FormData();
     Object.keys(profileAttributes).forEach(key => {
       const hasValue = profileAttributes[key] === undefined;
       if (!hasValue) {
         formData.append(`profile[${key}]`, profileAttributes[key]);
+      }
+    });
+    Object.entries(customAttributes || {}).forEach(([key, value]) => {
+      if (value !== undefined) {
+        formData.append(`profile[${key}]`, value);
       }
     });
     formData.append('profile[display_name]', displayName || '');

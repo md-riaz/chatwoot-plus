@@ -24,6 +24,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    webrtcUsername: {
+      type: String,
+      default: '',
+    },
+    webrtcPassword: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['updateUser'],
   setup() {
@@ -34,6 +42,8 @@ export default {
       userName: this.name,
       userDisplayName: this.displayName,
       userEmail: this.email,
+      userWebrtcUsername: this.webrtcUsername,
+      userWebrtcPassword: this.webrtcPassword,
       inputStyles: {
         borderRadius: '0.75rem',
         padding: '0.375rem 0.75rem',
@@ -72,6 +82,18 @@ export default {
       },
       immediate: true,
     },
+    webrtcUsername: {
+      handler(value) {
+        this.userWebrtcUsername = value;
+      },
+      immediate: true,
+    },
+    webrtcPassword: {
+      handler(value) {
+        this.userWebrtcPassword = value;
+      },
+      immediate: true,
+    },
   },
   methods: {
     async updateUser() {
@@ -84,6 +106,8 @@ export default {
         name: this.userName,
         displayName: this.userDisplayName,
         email: this.userEmail,
+        webrtcUsername: this.userWebrtcUsername,
+        webrtcPassword: this.userWebrtcPassword,
       });
     },
   },
@@ -130,6 +154,19 @@ export default {
       }`"
       @input="v$.userEmail.$touch"
       @blur="v$.userEmail.$touch"
+    />
+    <woot-input
+      v-model="userWebrtcUsername"
+      :styles="inputStyles"
+      :label="$t('PROFILE_SETTINGS.FORM.WEBRTC_USERNAME.LABEL')"
+      :placeholder="$t('PROFILE_SETTINGS.FORM.WEBRTC_USERNAME.PLACEHOLDER')"
+    />
+    <woot-input
+      v-model="userWebrtcPassword"
+      type="password"
+      :styles="inputStyles"
+      :label="$t('PROFILE_SETTINGS.FORM.WEBRTC_PASSWORD.LABEL')"
+      :placeholder="$t('PROFILE_SETTINGS.FORM.WEBRTC_PASSWORD.PLACEHOLDER')"
     />
     <div>
       <NextButton type="submit" :label="$t('PROFILE_SETTINGS.BTN_TEXT')" />

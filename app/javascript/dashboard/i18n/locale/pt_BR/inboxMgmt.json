@@ -393,11 +393,7 @@
             "WSS": "WebSocket seguro (WSS)",
             "WS": "WebSocket (WS)"
           },
-          "AUTH_TYPE": {
-            "LABEL": "Tipo de autenticação",
-            "JWT": "JWT",
-            "PASSWORD": "Usuário e senha"
-          },
+          "AUTH_TYPE_HINT": "Ramal SIP e senha são configurados no perfil de cada agente.",
           "TRANSFER_MODE": {
             "LABEL": "Modo de transferência",
             "SIP_REFER": "SIP REFER",
@@ -411,24 +407,6 @@
           "TRANSFER_API_TOKEN": {
             "LABEL": "Token da API de transferência",
             "PLACEHOLDER": "Token bearer opcional"
-          },
-          "USE_AGENT_JWT": "Gerar JWT a partir do perfil do usuário no Chatwoot",
-          "JWT_ISSUER": {
-            "LABEL": "Emissor do JWT",
-            "PLACEHOLDER": "pbx.exemplo.com"
-          },
-          "JWT_AUDIENCE": {
-            "LABEL": "Audiência do JWT",
-            "PLACEHOLDER": "clientes-webrtc"
-          },
-          "JWT_SECRET": {
-            "LABEL": "Segredo do JWT",
-            "PLACEHOLDER": "Informe o segredo de assinatura do JWT",
-            "REQUIRED": "Este campo é obrigatório"
-          },
-          "JWT_TTL": {
-            "LABEL": "TTL do JWT (segundos)",
-            "PLACEHOLDER": "3600"
           }
         }
       },

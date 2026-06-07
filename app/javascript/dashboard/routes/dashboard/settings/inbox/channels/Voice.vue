@@ -27,15 +27,9 @@ const state = reactive({
   sipDomain: '',
   sipOutboundProxy: '',
   sipTransport: 'wss',
-  authType: 'jwt',
   transferMode: 'sip_refer',
   transferApiUrl: '',
   transferApiToken: '',
-  useAgentJwt: true,
-  jwtIssuer: '',
-  jwtAudience: '',
-  jwtSecret: '',
-  jwtTtl: '3600',
 });
 
 const uiFlags = useMapGetter('inboxes/getUIFlags');
@@ -57,8 +51,6 @@ const validationRules = computed(() => {
     webrtcWsUrl: { required },
     sipDomain: { required },
     transferApiUrl: state.transferMode === 'ari' ? { required } : {},
-    jwtSecret:
-      state.authType === 'jwt' && !state.useAgentJwt ? { required } : {},
   };
 });
 
@@ -90,9 +82,6 @@ const formErrors = computed(() => ({
   transferApiUrl: v$.value.transferApiUrl?.$error
     ? t('INBOX_MGMT.ADD.VOICE.CUSTOM.TRANSFER_API_URL.REQUIRED')
     : '',
-  jwtSecret: v$.value.jwtSecret?.$error
-    ? t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_SECRET.REQUIRED')
-    : '',
 }));
 
 function getProviderConfig() {
@@ -110,20 +99,12 @@ function getProviderConfig() {
     sip_domain: state.sipDomain,
     sip_outbound_proxy: state.sipOutboundProxy,
     sip_transport: state.sipTransport,
-    auth_type: state.authType,
+    auth_type: 'password',
     transfer_mode: state.transferMode,
     transfer_api_url: state.transferMode === 'ari' ? state.transferApiUrl : '',
     transfer_api_token:
       state.transferMode === 'ari' ? state.transferApiToken : '',
   };
-
-  if (state.authType === 'jwt') {
-    config.use_agent_jwt = state.useAgentJwt;
-    config.jwt_secret = state.useAgentJwt ? '' : state.jwtSecret;
-    config.jwt_issuer = state.useAgentJwt ? '' : state.jwtIssuer;
-    config.jwt_audience = state.useAgentJwt ? '' : state.jwtAudience;
-    config.jwt_ttl = state.useAgentJwt ? '' : state.jwtTtl;
-  }
 
   return Object.fromEntries(
     Object.entries(config).filter(([, value]) => value !== '')
@@ -279,17 +260,9 @@ async function createChannel() {
           </select>
         </label>
 
-        <label class="flex flex-col gap-1 text-sm text-n-slate-11">
-          {{ t('INBOX_MGMT.ADD.VOICE.CUSTOM.AUTH_TYPE.LABEL') }}
-          <select v-model="state.authType" class="rounded-md border-n-strong">
-            <option value="jwt">
-              {{ t('INBOX_MGMT.ADD.VOICE.CUSTOM.AUTH_TYPE.JWT') }}
-            </option>
-            <option value="password">
-              {{ t('INBOX_MGMT.ADD.VOICE.CUSTOM.AUTH_TYPE.PASSWORD') }}
-            </option>
-          </select>
-        </label>
+        <p class="text-sm text-n-slate-11">
+          {{ t('INBOX_MGMT.ADD.VOICE.CUSTOM.AUTH_TYPE_HINT') }}
+        </p>
 
         <label class="flex flex-col gap-1 text-sm text-n-slate-11">
           {{ t('INBOX_MGMT.ADD.VOICE.CUSTOM.TRANSFER_MODE.LABEL') }}
@@ -326,51 +299,6 @@ async function createChannel() {
               t('INBOX_MGMT.ADD.VOICE.CUSTOM.TRANSFER_API_TOKEN.PLACEHOLDER')
             "
           />
-        </template>
-
-        <template v-if="state.authType === 'jwt'">
-          <label class="flex items-center gap-2 text-sm text-n-slate-11">
-            <input v-model="state.useAgentJwt" type="checkbox" />
-            {{ t('INBOX_MGMT.ADD.VOICE.CUSTOM.USE_AGENT_JWT') }}
-          </label>
-
-          <template v-if="!state.useAgentJwt">
-            <Input
-              v-model="state.jwtIssuer"
-              :label="t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_ISSUER.LABEL')"
-              :placeholder="
-                t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_ISSUER.PLACEHOLDER')
-              "
-            />
-
-            <Input
-              v-model="state.jwtAudience"
-              :label="t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_AUDIENCE.LABEL')"
-              :placeholder="
-                t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_AUDIENCE.PLACEHOLDER')
-              "
-            />
-
-            <Input
-              v-model="state.jwtSecret"
-              type="password"
-              :label="t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_SECRET.LABEL')"
-              :placeholder="
-                t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_SECRET.PLACEHOLDER')
-              "
-              :message="formErrors.jwtSecret"
-              :message-type="formErrors.jwtSecret ? 'error' : 'info'"
-              @blur="v$.jwtSecret?.$touch"
-            />
-
-            <Input
-              v-model="state.jwtTtl"
-              :label="t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_TTL.LABEL')"
-              :placeholder="
-                t('INBOX_MGMT.ADD.VOICE.CUSTOM.JWT_TTL.PLACEHOLDER')
-              "
-            />
-          </template>
         </template>
       </template>
 

@@ -2,22 +2,11 @@ class Voice::Provider::Custom::TokenService
   pattr_initialize [:inbox!, :user!, :account!]
 
   def generate
-    if auth_type == 'password'
-      return {
-        provider: 'custom',
-        account_id: account.id,
-        auth_type: 'password',
-        password: resolved_password,
-        webrtc: webrtc_config,
-        transfer: transfer_config
-      }.compact
-    end
-
     {
       provider: 'custom',
       account_id: account.id,
-      auth_type: 'jwt',
-      token: resolved_token,
+      auth_type: 'password',
+      password: resolved_password,
       webrtc: webrtc_config,
       transfer: transfer_config
     }.compact
@@ -43,39 +32,11 @@ class Voice::Provider::Custom::TokenService
     }
   end
 
-  def resolved_token
-    member_token = inbox_member&.webrtc_jwt
-    return member_token if member_token.present?
-    return user_custom_attributes['webrtc_jwt'] if user_custom_attributes['webrtc_jwt'].present?
-    return config['token'] if config['token'].present?
-    return nil if config['jwt_secret'].blank?
-
-    JWT.encode(token_payload, config['jwt_secret'], 'HS256')
-  end
-
   def resolved_password
     inbox_member&.webrtc_password.presence ||
       user_custom_attributes['webrtc_password'].presence ||
       config['password'].presence ||
       config['token'].presence
-  end
-
-  def auth_type
-    config['auth_type'].presence || 'jwt'
-  end
-
-  def token_payload
-    payload = {
-      sub: user.id.to_s,
-      email: user.email,
-      account_id: account.id,
-      name: user.name
-    }
-    ttl = config['jwt_ttl'].to_i
-    payload[:exp] = Time.zone.now.to_i + ttl if ttl.positive?
-    payload[:iss] = config['jwt_issuer'] if config['jwt_issuer'].present?
-    payload[:aud] = config['jwt_audience'] if config['jwt_audience'].present?
-    payload
   end
 
   def resolved_username

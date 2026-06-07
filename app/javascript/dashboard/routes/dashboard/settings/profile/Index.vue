@@ -65,6 +65,8 @@ export default {
       displayName: '',
       email: '',
       messageSignature: '',
+      webrtcUsername: '',
+      webrtcPassword: '',
       hotKeys: [
         {
           key: 'enter',
@@ -116,6 +118,10 @@ export default {
       this.avatarUrl = this.currentUser.avatar_url;
       this.displayName = this.currentUser.display_name;
       this.messageSignature = this.currentUser.message_signature;
+      this.webrtcUsername =
+        this.currentUser.custom_attributes?.webrtc_username || '';
+      this.webrtcPassword =
+        this.currentUser.custom_attributes?.webrtc_password || '';
     },
     async dispatchUpdate(payload, successMessage, errorMessage) {
       let alertMessage = '';
@@ -133,16 +139,23 @@ export default {
       }
     },
     async updateProfile(userAttributes) {
-      const { name, email, displayName } = userAttributes;
+      const { name, email, displayName, webrtcUsername, webrtcPassword } =
+        userAttributes;
       const hasEmailChanged = this.currentUser.email !== email;
       this.name = name || this.name;
       this.email = email || this.email;
       this.displayName = displayName || this.displayName;
+      this.webrtcUsername = webrtcUsername || '';
+      this.webrtcPassword = webrtcPassword || '';
 
       const updatePayload = {
         name: this.name,
         email: this.email,
         displayName: this.displayName,
+        customAttributes: {
+          webrtc_username: this.webrtcUsername,
+          webrtc_password: this.webrtcPassword,
+        },
         avatar: this.avatarFile,
       };
 
@@ -220,6 +233,8 @@ export default {
           :display-name="displayName"
           :email="email"
           :email-enabled="!globalConfig.disableUserProfileUpdate"
+          :webrtc-username="webrtcUsername"
+          :webrtc-password="webrtcPassword"
           @update-user="updateProfile"
         />
       </div>

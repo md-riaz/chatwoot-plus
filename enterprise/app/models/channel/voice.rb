@@ -105,8 +105,8 @@ class Channel::Voice < ApplicationRecord
       errors.add(:provider_config, "#{key} is required for custom provider") if config[key].blank?
     end
 
-    auth_type = config['auth_type'].presence || 'jwt'
-    errors.add(:provider_config, 'auth_type is invalid for custom provider') unless %w[jwt password].include?(auth_type)
+    auth_type = config['auth_type'].presence || 'password'
+    errors.add(:provider_config, 'auth_type must be password for custom provider') unless auth_type == 'password'
 
     if config['transfer_mode'].to_s == 'ari' && config['transfer_api_url'].blank?
       errors.add(:provider_config, 'transfer_api_url is required for custom provider')
