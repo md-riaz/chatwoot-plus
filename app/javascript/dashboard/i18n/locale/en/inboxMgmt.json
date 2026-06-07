@@ -369,6 +369,19 @@
           "ERROR_MESSAGE": "We were not able to create the voice channel"
         }
       },
+      "INTERNAL_CHANNEL": {
+        "TITLE": "Internal Chat",
+        "DESC": "Create inbox for agent-to-agent internal chat.",
+        "CHANNEL_NAME": {
+          "LABEL": "Inbox Name",
+          "PLACEHOLDER": "Enter internal inbox name",
+          "ERROR": "This field is required"
+        },
+        "SUBMIT_BUTTON": "Create Internal Chat Inbox",
+        "API": {
+          "ERROR_MESSAGE": "We were not able to create the internal chat inbox"
+        }
+      },
       "API_CHANNEL": {
         "TITLE": "API Channel",
         "DESC": "Integrate with API channel and start supporting your customers.",
@@ -501,6 +514,10 @@
           "TIKTOK": {
             "TITLE": "TikTok",
             "DESCRIPTION": "Connect your TikTok account"
+          },
+          "INTERNAL": {
+            "TITLE": "Internal Chat",
+            "DESCRIPTION": "Create inbox for agent-only text conversations"
           },
           "VOICE": {
             "TITLE": "Voice",
