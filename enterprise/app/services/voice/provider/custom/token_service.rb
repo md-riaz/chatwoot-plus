@@ -44,7 +44,7 @@ class Voice::Provider::Custom::TokenService
   end
 
   def resolved_token
-    member_token = inbox_member&.webrtc_jwt
+    member_token = member_custom_attributes['webrtc_jwt']
     return member_token if member_token.present?
     return user_custom_attributes['webrtc_jwt'] if user_custom_attributes['webrtc_jwt'].present?
     return config['token'] if config['token'].present?
@@ -53,7 +53,7 @@ class Voice::Provider::Custom::TokenService
     JWT.encode(token_payload, config['jwt_secret'], 'HS256')
   end
   def resolved_password
-    inbox_member&.webrtc_password.presence ||
+    member_custom_attributes['webrtc_password'].presence ||
       user_custom_attributes['webrtc_password'].presence ||
       config['password'].presence ||
       config['token'].presence
@@ -77,7 +77,7 @@ class Voice::Provider::Custom::TokenService
     payload
   end
   def resolved_username
-    inbox_member&.webrtc_username.presence ||
+    member_custom_attributes['webrtc_username'].presence ||
       user_custom_attributes['webrtc_username'].presence ||
       user.email
   end
@@ -110,6 +110,11 @@ class Voice::Provider::Custom::TokenService
 
   def inbox_member
     @inbox_member ||= inbox.inbox_members.find_by(user_id: user.id)
+  end
+
+  def member_custom_attributes
+    attrs = inbox_member&.try(:custom_attributes)
+    attrs.is_a?(Hash) ? attrs : {}
   end
 
   def config
