@@ -367,6 +367,69 @@
         "SUBMIT_BUTTON": "Criar Canal de Voz",
         "API": {
           "ERROR_MESSAGE": "Não conseguimos criar o canal de voz"
+        },
+        "PROVIDERS": {
+          "LABEL": "Provedor de voz",
+          "TWILIO": "Twilio",
+          "CUSTOM": "SIP/WebRTC customizado"
+        },
+        "CUSTOM": {
+          "WEBRTC_WS_URL": {
+            "LABEL": "URL WS do WebRTC",
+            "PLACEHOLDER": "wss://pbx.exemplo.com/ws",
+            "REQUIRED": "Este campo é obrigatório"
+          },
+          "SIP_DOMAIN": {
+            "LABEL": "Domínio SIP",
+            "PLACEHOLDER": "pbx.exemplo.com",
+            "REQUIRED": "Este campo é obrigatório"
+          },
+          "SIP_OUTBOUND_PROXY": {
+            "LABEL": "Proxy SIP de saída",
+            "PLACEHOLDER": "sip:proxy.exemplo.com;transport=wss"
+          },
+          "SIP_TRANSPORT": {
+            "LABEL": "Transporte SIP",
+            "WSS": "WebSocket seguro (WSS)",
+            "WS": "WebSocket (WS)"
+          },
+          "AUTH_TYPE": {
+            "LABEL": "Tipo de autenticação",
+            "JWT": "JWT",
+            "PASSWORD": "Usuário e senha"
+          },
+          "TRANSFER_MODE": {
+            "LABEL": "Modo de transferência",
+            "SIP_REFER": "SIP REFER",
+            "ARI": "ARI / requisição de API"
+          },
+          "TRANSFER_API_URL": {
+            "LABEL": "URL da API de transferência",
+            "PLACEHOLDER": "https://pbx.exemplo.com/api/transfer",
+            "REQUIRED": "Este campo é obrigatório quando o modo ARI está selecionado"
+          },
+          "TRANSFER_API_TOKEN": {
+            "LABEL": "Token da API de transferência",
+            "PLACEHOLDER": "Token bearer opcional"
+          },
+          "USE_AGENT_JWT": "Gerar JWT a partir do perfil do usuário no Chatwoot",
+          "JWT_ISSUER": {
+            "LABEL": "Emissor do JWT",
+            "PLACEHOLDER": "pbx.exemplo.com"
+          },
+          "JWT_AUDIENCE": {
+            "LABEL": "Audiência do JWT",
+            "PLACEHOLDER": "clientes-webrtc"
+          },
+          "JWT_SECRET": {
+            "LABEL": "Segredo do JWT",
+            "PLACEHOLDER": "Informe o segredo de assinatura do JWT",
+            "REQUIRED": "Este campo é obrigatório"
+          },
+          "JWT_TTL": {
+            "LABEL": "TTL do JWT (segundos)",
+            "PLACEHOLDER": "3600"
+          }
         }
       },
       "INTERNAL_CHANNEL": {
@@ -521,7 +584,7 @@
           },
           "VOICE": {
             "TITLE": "Voz",
-            "DESCRIPTION": "Integre com o Twilio Voice"
+            "DESCRIPTION": "Integre com Twilio ou voz SIP customizada"
           }
         }
       },

@@ -50,6 +50,12 @@ class Channel::Voice < ApplicationRecord
         conference_sid: conference_sid,
         agent_id: agent_id
       )
+    when 'custom'
+      Voice::Provider::Custom::Adapter.new(channel: self).initiate_call(
+        to: to,
+        conference_sid: conference_sid,
+        agent_id: agent_id
+      )
     else
       raise "Unsupported voice provider: #{provider}"
     end
@@ -78,6 +84,8 @@ class Channel::Voice < ApplicationRecord
     case provider
     when 'twilio'
       validate_twilio_config
+    when 'custom'
+      validate_custom_config
     end
   end
 
@@ -90,6 +98,21 @@ class Channel::Voice < ApplicationRecord
     end
   end
 
+  def validate_custom_config
+    config = provider_config_hash.with_indifferent_access
+    required_keys = %w[webrtc_ws_url sip_domain]
+    required_keys.each do |key|
+      errors.add(:provider_config, "#{key} is required for custom provider") if config[key].blank?
+    end
+
+    auth_type = config['auth_type'].presence || 'jwt'
+    errors.add(:provider_config, 'auth_type is invalid for custom provider') unless %w[jwt password].include?(auth_type)
+
+    if config['transfer_mode'].to_s == 'ari' && config['transfer_api_url'].blank?
+      errors.add(:provider_config, 'transfer_api_url is required for custom provider')
+    end
+  end
+
   def provider_config_hash
     if provider_config.is_a?(Hash)
       provider_config
@@ -97,6 +120,7 @@ class Channel::Voice < ApplicationRecord
       JSON.parse(provider_config.to_s)
     end
   end
+
 
   def provision_twilio_on_create
     service = ::Twilio::VoiceWebhookSetupService.new(channel: self)

@@ -35,6 +35,44 @@ class VoiceAPI extends ApiClient {
       .get(`${this.baseUrl()}/inboxes/${inboxId}/conference/token`)
       .then(r => r.data);
   }
+
+  notifyIncomingCall({ inboxId, callSid, fromNumber }) {
+    return axios
+      .post(`${this.baseUrl()}/inboxes/${inboxId}/conference`, {
+        call_sid: callSid,
+        from_number: fromNumber,
+      })
+      .then(r => r.data);
+  }
+
+  updateCallStatus({
+    inboxId,
+    conversationId,
+    callSid,
+    callStatus,
+    reason,
+    timestamp,
+  }) {
+    return axios
+      .patch(`${this.baseUrl()}/inboxes/${inboxId}/conference`, {
+        conversation_id: conversationId,
+        call_sid: callSid,
+        call_status: callStatus,
+        reason,
+        timestamp,
+      })
+      .then(r => r.data);
+  }
+
+  transferCall({ inboxId, conversationId, targetAgentId, callSid }) {
+    return axios
+      .post(`${this.baseUrl()}/inboxes/${inboxId}/conference/transfer`, {
+        conversation_id: conversationId,
+        target_agent_id: targetAgentId,
+        call_sid: callSid,
+      })
+      .then(r => r.data);
+  }
 }
 
 export default new VoiceAPI();

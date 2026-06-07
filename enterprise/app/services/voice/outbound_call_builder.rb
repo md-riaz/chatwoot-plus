@@ -49,7 +49,8 @@ class Voice::OutboundCallBuilder
   end
 
   def initiate_call!
-    inbox.channel.initiate_call(to: contact.phone_number)[:call_sid]
+    @provider_response = inbox.channel.initiate_call(to: contact.phone_number)
+    @provider_response[:call_sid]
   end
 
   def create_call!(conversation, call_sid)
@@ -59,13 +60,17 @@ class Voice::OutboundCallBuilder
       conversation: conversation,
       contact: contact,
       accepted_by_agent: user,
-      provider: :twilio,
+      provider: provider_key,
       direction: :outgoing,
       status: 'ringing',
       provider_call_id: call_sid,
       meta: { 'initiated_at' => Time.zone.now.to_i }
     )
-    call.update!(conference_sid: call.default_conference_sid)
+    call.update!(conference_sid: call.default_conference_sid) unless call.custom?
     call
+  end
+
+  def provider_key
+    inbox.channel.provider.to_s == 'custom' ? :custom : :twilio
   end
 end
