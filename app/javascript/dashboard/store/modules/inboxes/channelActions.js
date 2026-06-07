@@ -3,6 +3,22 @@ import InboxesAPI from '../../../api/inboxes';
 import AnalyticsHelper from '../../../helper/AnalyticsHelper';
 import { ACCOUNT_EVENTS } from '../../../helper/AnalyticsHelper/events';
 
+const appendFormValue = (formData, key, value) => {
+  if (Array.isArray(value)) {
+    value.forEach(item => appendFormValue(formData, `${key}[]`, item));
+    return;
+  }
+
+  if (value && typeof value === 'object' && !(value instanceof File)) {
+    Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+      appendFormValue(formData, `${key}[${nestedKey}]`, nestedValue);
+    });
+    return;
+  }
+
+  formData.append(key, value);
+};
+
 export const buildInboxData = inboxParams => {
   const formData = new FormData();
   const { channel = {}, ...inboxProperties } = inboxParams;
@@ -21,7 +37,7 @@ export const buildInboxData = inboxParams => {
     }
   }
   Object.keys(channelParams).forEach(key => {
-    formData.append(`channel[${key}]`, channel[key]);
+    appendFormValue(formData, `channel[${key}]`, channel[key]);
   });
   return formData;
 };
@@ -36,10 +52,12 @@ export const channelActions = {
   createVoiceChannel: async ({ commit }, params) => {
     try {
       commit(types.default.SET_INBOXES_UI_FLAG, { isCreating: true });
-      const response = await InboxesAPI.create({
-        name: params.name,
-        channel: { ...params.voice, type: 'voice' },
-      });
+      const response = await InboxesAPI.create(
+        buildInboxData({
+          name: params.name,
+          channel: { ...params.voice, type: 'voice' },
+        })
+      );
       commit(types.default.ADD_INBOXES, response.data);
       commit(types.default.SET_INBOXES_UI_FLAG, { isCreating: false });
       sendAnalyticsEvent('voice');
