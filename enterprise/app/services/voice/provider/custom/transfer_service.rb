@@ -47,7 +47,9 @@ class Voice::Provider::Custom::TransferService
   end
 
   def refer_target
-    username = target_agent.custom_attributes&.dig('webrtc_username').presence || target_agent.email
+    username = target_inbox_member&.webrtc_username.presence ||
+      target_agent.custom_attributes&.dig('webrtc_username').presence ||
+      target_agent.email
     domain = config['sip_domain']
     "sip:#{username}@#{domain}"
   end
@@ -58,5 +60,9 @@ class Voice::Provider::Custom::TransferService
 
   def config
     @config ||= inbox.channel.provider_config_hash.with_indifferent_access
+  end
+
+  def target_inbox_member
+    @target_inbox_member ||= inbox.inbox_members.find_by(user_id: target_agent.id)
   end
 end
