@@ -5,6 +5,7 @@ const channelTypeIconMap = {
   'Channel::Api': 'i-woot-api',
   'Channel::Email': 'i-woot-mail',
   'Channel::FacebookPage': 'i-woot-messenger',
+  'Channel::Internal': 'i-ri-chat-1-line',
   'Channel::Line': 'i-woot-line',
   'Channel::Sms': 'i-woot-sms',
   'Channel::Telegram': 'i-woot-telegram',

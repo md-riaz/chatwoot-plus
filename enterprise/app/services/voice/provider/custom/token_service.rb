@@ -52,7 +52,6 @@ class Voice::Provider::Custom::TokenService
 
     JWT.encode(token_payload, config['jwt_secret'], 'HS256')
   end
-
   def resolved_password
     inbox_member&.webrtc_password.presence ||
       user_custom_attributes['webrtc_password'].presence ||
@@ -77,7 +76,6 @@ class Voice::Provider::Custom::TokenService
     payload[:aud] = config['jwt_audience'] if config['jwt_audience'].present?
     payload
   end
-
   def resolved_username
     inbox_member&.webrtc_username.presence ||
       user_custom_attributes['webrtc_username'].presence ||

@@ -124,7 +124,6 @@ function getProviderConfig() {
     config.jwt_audience = state.useAgentJwt ? '' : state.jwtAudience;
     config.jwt_ttl = state.useAgentJwt ? '' : state.jwtTtl;
   }
-
   return Object.fromEntries(
     Object.entries(config).filter(([, value]) => value !== '')
   );

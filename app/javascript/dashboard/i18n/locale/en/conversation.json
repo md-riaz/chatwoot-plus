@@ -377,7 +377,30 @@
       "HANDLED_IN_ANOTHER_TAB": "Being handled in another tab",
       "REJECT_CALL": "Reject",
       "JOIN_CALL": "Join call",
-      "END_CALL": "End call"
+      "END_CALL": "End call",
+      "CONNECTED": "Voice connected."
+    },
+    "INTERNAL_CHAT": {
+      "TITLE": "Internal chat",
+      "DESCRIPTION": "Start a private text conversation with other agents.",
+      "NO_INBOX": "No internal chat inbox is available for your account.",
+      "INBOX_LABEL": "Internal inbox",
+      "INBOX_PLACEHOLDER": "Select an internal inbox",
+      "TITLE_LABEL": "Conversation title",
+      "OPTIONAL": "optional",
+      "TITLE_PLACEHOLDER": "Add a title for this internal chat",
+      "PARTICIPANTS_LABEL": "Participants",
+      "NO_PARTICIPANT_SELECTED": "No participants selected yet.",
+      "ADD_PARTICIPANTS": "Add participants",
+      "ADD_ME": "Add me",
+      "SEARCH_PARTICIPANTS": "Search agents...",
+      "MESSAGE_LABEL": "Message",
+      "MESSAGE_PLACEHOLDER": "Write your internal message",
+      "CANCEL": "Cancel",
+      "SUBMIT": "Start internal chat",
+      "SUCCESS": "Internal chat created successfully.",
+      "GO_TO_CONVERSATION": "Open conversation",
+      "ERROR": "Could not create the internal chat."
     }
   },
   "EMAIL_TRANSCRIPT": {

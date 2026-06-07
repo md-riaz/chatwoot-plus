@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { UserAgent, Registerer, Inviter, SessionState } from 'sip.js';
 import VoiceAPI from './voiceAPIClient';
 
@@ -38,7 +39,7 @@ class CustomVoiceClient extends EventTarget {
     this.inboxId = null;
     this.webrtcConfig = null;
     this.token = null;
-    this.authType = 'jwt';
+    this.authType = 'password';
     this.pendingInvites = new Map();
     this.remoteAudio = null;
     this.audioPlaybackRequested = false;
@@ -69,28 +70,16 @@ class CustomVoiceClient extends EventTarget {
       force,
     });
     const response = await VoiceAPI.getToken(inboxId);
-    const {
-      token,
-      webrtc,
-      provider,
-      auth_type: authType,
-      password,
-    } = response || {};
+    const { webrtc, provider, password } = response || {};
     if (provider !== 'custom') throw new Error('Invalid provider');
     if (!webrtc?.ws_url || !webrtc?.sip_domain) {
       throw new Error('Invalid WebRTC config');
     }
 
-    const resolvedAuthType = authType || 'jwt';
-    const credential =
-      resolvedAuthType === 'password' ? password || token : token;
+    const credential = password;
 
-    if (resolvedAuthType === 'password' && !credential) {
+    if (!credential) {
       throw new Error('Missing WebRTC password');
-    }
-
-    if (resolvedAuthType === 'jwt' && !credential) {
-      throw new Error('Invalid token');
     }
 
     const username = webrtc.username;
@@ -117,14 +106,14 @@ class CustomVoiceClient extends EventTarget {
       wsUrl: webrtc.ws_url,
       sipDomain: webrtc.sip_domain,
       username,
-      authType: resolvedAuthType,
+      hasPassword: !!credential,
       hasCredential: !!credential,
       hasIceServers: !!iceServers.length,
     });
     this.userAgent = new UserAgent({
       uri,
       authorizationUsername: username,
-      authorizationPassword: credential || '',
+      authorizationPassword: credential,
       displayName: webrtc.display_name || username,
       transportOptions: { server: webrtc.ws_url },
       sessionDescriptionHandlerFactoryOptions: {
@@ -148,7 +137,7 @@ class CustomVoiceClient extends EventTarget {
 
     this.webrtcConfig = webrtc;
     this.token = credential;
-    this.authType = resolvedAuthType;
+    this.authType = 'password';
     this.initialized = true;
     this.inboxId = inboxId;
     this.reconnectAttempt = 0;
@@ -248,7 +237,7 @@ class CustomVoiceClient extends EventTarget {
     this.registerer = null;
     this.webrtcConfig = null;
     this.token = null;
-    this.authType = 'jwt';
+    this.authType = 'password';
     this.pendingInvites.clear();
     if (this.remoteAudio) {
       this.remoteAudio.pause();
@@ -784,6 +773,7 @@ class CustomVoiceClient extends EventTarget {
     );
   }
 
+  // eslint-disable-next-line class-methods-use-this
   setSessionContext(session, { callSid, conversationId, inboxId }) {
     session.__cwCallSid = callSid;
     session.__cwConversationId = conversationId;
@@ -826,9 +816,9 @@ class CustomVoiceClient extends EventTarget {
     return uri;
   }
 
+  // eslint-disable-next-line class-methods-use-this
   extraHeaders() {
-    if (this.authType !== 'jwt' || !this.token) return [];
-    return [`Authorization: Bearer ${this.token}`];
+    return [];
   }
 }
 

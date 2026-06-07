@@ -211,6 +211,14 @@
         "ERROR": "Please enter a valid email address",
         "PLACEHOLDER": "Please enter your email address, this would be displayed in conversations"
       },
+      "WEBRTC_USERNAME": {
+        "LABEL": "SIP extension / username",
+        "PLACEHOLDER": "Enter your SIP extension or username"
+      },
+      "WEBRTC_PASSWORD": {
+        "LABEL": "SIP password",
+        "PLACEHOLDER": "Enter your SIP password"
+      },
       "CURRENT_PASSWORD": {
         "LABEL": "Current password",
         "ERROR": "Please enter the current password",
