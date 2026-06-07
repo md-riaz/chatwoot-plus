@@ -393,6 +393,19 @@
           "ERROR_MESSAGE": "Não conseguimos criar o canal de voz"
         }
       },
+      "INTERNAL_CHANNEL": {
+        "TITLE": "Chat Interno",
+        "DESC": "Crie uma caixa de entrada para chat interno entre agentes.",
+        "CHANNEL_NAME": {
+          "LABEL": "Nome da Caixa de Entrada",
+          "PLACEHOLDER": "Digite o nome da caixa de entrada interna",
+          "ERROR": "Este campo é obrigatório"
+        },
+        "SUBMIT_BUTTON": "Criar Caixa de Entrada de Chat Interno",
+        "API": {
+          "ERROR_MESSAGE": "Não foi possível criar a caixa de entrada de chat interno"
+        }
+      },
       "API_CHANNEL": {
         "TITLE": "Canal da API",
         "DESC": "Integre com canal API e comece a ajudar seus clientes.",
@@ -525,6 +538,10 @@
           "TIKTOK": {
             "TITLE": "TikTok",
             "DESCRIPTION": "Conecte sua conta do TikTok"
+          },
+          "INTERNAL": {
+            "TITLE": "Chat Interno",
+            "DESCRIPTION": "Crie uma caixa de entrada para conversas de texto entre agentes"
           },
           "VOICE": {
             "TITLE": "Voz",

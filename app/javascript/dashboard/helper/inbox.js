@@ -11,6 +11,7 @@ export const INBOX_TYPES = {
   SMS: 'Channel::Sms',
   INSTAGRAM: 'Channel::Instagram',
   TIKTOK: 'Channel::Tiktok',
+  INTERNAL: 'Channel::Internal',
 };
 
 // Add providers here as they gain voice capability (e.g., WhatsApp Cloud, Twilio WhatsApp)
@@ -25,7 +26,6 @@ export const getVoiceCallProvider = inbox => {
   // Callers pass either snake_case (raw API) or camelCase (after camelcaseKeys) shapes.
   const channelType = inbox.channel_type || inbox.channelType;
   const voiceEnabled = inbox.voice_enabled || inbox.voiceEnabled;
-
   if (!voiceEnabled) return null;
 
   if (channelType === INBOX_TYPES.TWILIO) return VOICE_CALL_PROVIDERS.TWILIO;
@@ -53,6 +53,7 @@ const INBOX_ICON_MAP_FILL = {
   [INBOX_TYPES.LINE]: 'i-ri-line-fill',
   [INBOX_TYPES.INSTAGRAM]: 'i-ri-instagram-fill',
   [INBOX_TYPES.TIKTOK]: 'i-ri-tiktok-fill',
+  [INBOX_TYPES.INTERNAL]: 'i-ri-chat-1-fill',
 };
 
 const DEFAULT_ICON_FILL = 'i-ri-chat-1-fill';
@@ -68,6 +69,7 @@ const INBOX_ICON_MAP_LINE = {
   [INBOX_TYPES.LINE]: 'i-woot-line',
   [INBOX_TYPES.INSTAGRAM]: 'i-woot-instagram',
   [INBOX_TYPES.TIKTOK]: 'i-woot-tiktok',
+  [INBOX_TYPES.INTERNAL]: 'i-ri-chat-1-line',
 };
 
 const DEFAULT_ICON_LINE = 'i-ri-chat-1-line';
@@ -117,11 +119,13 @@ export const getReadableInboxByType = (type, phoneNumber) => {
     case INBOX_TYPES.LINE:
       return 'line';
 
+    case INBOX_TYPES.INTERNAL:
+      return 'internal';
+
     default:
       return 'chat';
   }
 };
-
 export const getInboxClassByType = (type, phoneNumber) => {
   switch (type) {
     case INBOX_TYPES.WEB:
@@ -158,6 +162,9 @@ export const getInboxClassByType = (type, phoneNumber) => {
 
     case INBOX_TYPES.TIKTOK:
       return 'brand-tiktok';
+
+    case INBOX_TYPES.INTERNAL:
+      return 'chat';
 
     default:
       return 'chat';
