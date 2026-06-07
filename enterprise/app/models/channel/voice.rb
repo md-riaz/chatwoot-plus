@@ -30,6 +30,7 @@ class Channel::Voice < ApplicationRecord
 
   # Provider-specific configs stored in JSON
   validate :validate_provider_config
+  before_validation :normalize_custom_provider_config, if: :custom?
   before_validation :provision_twilio_on_create, on: :create, if: :twilio?
 
   EDITABLE_ATTRS = [:phone_number, :provider, { provider_config: {} }].freeze
@@ -76,6 +77,19 @@ class Channel::Voice < ApplicationRecord
 
   def twilio?
     provider == 'twilio'
+  end
+
+  def custom?
+    provider == 'custom'
+  end
+
+  def normalize_custom_provider_config
+    cfg = provider_config_hash.with_indifferent_access
+    ws_url = cfg[:webrtc_ws_url].to_s.strip
+    return if ws_url.blank?
+
+    cfg[:webrtc_ws_url] = ws_url.end_with?('/') ? ws_url : "#{ws_url}/"
+    self.provider_config = cfg
   end
 
   def validate_provider_config
