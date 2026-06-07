@@ -330,7 +330,7 @@
       },
       "VOICE": {
         "TITLE": "Voice Channel",
-        "DESC": "Integrate Twilio or custom SIP/WebRTC voice and start supporting your customers via phone calls.",
+        "DESC": "Integrate Twilio or your own SIP/WebRTC stack to support customers over phone calls.",
         "PHONE_NUMBER": {
           "LABEL": "Phone Number",
           "PLACEHOLDER": "Enter your phone number (e.g. +1234567890)",
@@ -369,18 +369,18 @@
           "ERROR_MESSAGE": "We were not able to create the voice channel"
         },
         "PROVIDERS": {
-          "LABEL": "Voice provider",
+          "LABEL": "Provider",
           "TWILIO": "Twilio",
           "CUSTOM": "Custom SIP/WebRTC"
         },
         "CUSTOM": {
           "WEBRTC_WS_URL": {
-            "LABEL": "WebRTC WS URL",
+            "LABEL": "WebRTC WebSocket URL",
             "PLACEHOLDER": "wss://pbx.example.com/ws",
             "REQUIRED": "This field is required"
           },
           "SIP_DOMAIN": {
-            "LABEL": "SIP domain",
+            "LABEL": "SIP Domain",
             "PLACEHOLDER": "pbx.example.com",
             "REQUIRED": "This field is required"
           },
@@ -393,11 +393,11 @@
             "WSS": "Secure WebSocket (WSS)",
             "WS": "WebSocket (WS)"
           },
-          "AUTH_TYPE_HINT": "Agent SIP extension and password are configured in each agent's profile settings.",
+          "AUTH_TYPE_HINT": "Each agent's SIP extension and password are configured in profile settings.",
           "TRANSFER_MODE": {
             "LABEL": "Transfer mode",
             "SIP_REFER": "SIP REFER",
-            "ARI": "ARI / API request"
+            "ARI": "ARI / API Request"
           },
           "TRANSFER_API_URL": {
             "LABEL": "Transfer API URL",
@@ -405,8 +405,8 @@
             "REQUIRED": "This field is required when ARI mode is selected"
           },
           "TRANSFER_API_TOKEN": {
-            "LABEL": "Transfer API token",
-            "PLACEHOLDER": "Optional bearer token"
+            "LABEL": "Transfer API Token",
+            "PLACEHOLDER": "Optional bearer token for transfer requests"
           }
         }
       },

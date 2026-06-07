@@ -1,11 +1,14 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useStore } from 'vuex';
+import { useAlert } from 'dashboard/composables';
 import { INBOX_TYPES } from 'dashboard/helper/inbox';
 import VoiceAPI from 'dashboard/api/channel/voice/voiceAPIClient';
 import CustomVoiceClient from 'dashboard/api/channel/voice/customVoiceClient';
 
 const store = useStore();
+const { t } = useI18n();
 
 const RETRY_STEPS_SECONDS = [15, 30, 45, 60];
 const PAUSE_SECONDS = 120;
@@ -14,6 +17,7 @@ const retryIndex = ref(0);
 const timerId = ref(null);
 const isRegistering = ref(false);
 const lastInboxId = ref(null);
+const alertedInboxId = ref(null);
 
 const inboxes = computed(() => store.getters['inboxes/getInboxes'] || []);
 const customVoiceInboxes = computed(() =>
@@ -30,12 +34,13 @@ const clearTimer = () => {
   }
 };
 
-const scheduleNextAttempt = seconds => {
+let attemptRegister;
+function scheduleNextAttempt(seconds) {
   clearTimer();
   timerId.value = setTimeout(() => {
     attemptRegister('retry');
   }, seconds * 1000);
-};
+}
 
 const validateTokenResponse = data => {
   if (!data || data.provider !== 'custom') return false;
@@ -44,23 +49,27 @@ const validateTokenResponse = data => {
   return !!data.password;
 };
 
-const resolveInboxWithCredentials = async () => {
-  for (const inbox of customVoiceInboxes.value) {
-    try {
-      const response = await VoiceAPI.getToken(inbox.id);
-      if (validateTokenResponse(response)) return inbox;
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('[VoiceAutoRegister] token check failed', {
-        inboxId: inbox.id,
-        error,
-      });
-    }
-  }
-  return null;
-};
+async function resolveInboxWithCredentials() {
+  const results = await Promise.all(
+    customVoiceInboxes.value.map(async inbox => {
+      try {
+        const response = await VoiceAPI.getToken(inbox.id);
+        return validateTokenResponse(response) ? inbox : null;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn('[VoiceAutoRegister] token check failed', {
+          inboxId: inbox.id,
+          error,
+        });
+        return null;
+      }
+    })
+  );
 
-const recordFailureAndSchedule = () => {
+  return results.find(Boolean) || null;
+}
+
+function recordFailureAndSchedule() {
   if (retryIndex.value < RETRY_STEPS_SECONDS.length) {
     const delay = RETRY_STEPS_SECONDS[retryIndex.value];
     retryIndex.value += 1;
@@ -70,9 +79,9 @@ const recordFailureAndSchedule = () => {
 
   retryIndex.value = 0;
   scheduleNextAttempt(PAUSE_SECONDS);
-};
+}
 
-const attemptRegister = async reason => {
+attemptRegister = async reason => {
   if (isRegistering.value) return;
   if (!customVoiceInboxes.value.length) return;
 
@@ -99,6 +108,10 @@ const attemptRegister = async reason => {
     await CustomVoiceClient.initializeDevice(inbox.id);
     // eslint-disable-next-line no-console
     console.log('[VoiceAutoRegister] register success', { inboxId: inbox.id });
+    if (alertedInboxId.value !== inbox.id) {
+      useAlert(t('CONVERSATION.VOICE_WIDGET.CONNECTED'));
+      alertedInboxId.value = inbox.id;
+    }
     retryIndex.value = 0;
     clearTimer();
   } catch (error) {
@@ -117,6 +130,7 @@ watch(
       clearTimer();
       retryIndex.value = 0;
       lastInboxId.value = null;
+      alertedInboxId.value = null;
       return;
     }
     attemptRegister('initial');

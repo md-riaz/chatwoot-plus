@@ -377,7 +377,8 @@
       "HANDLED_IN_ANOTHER_TAB": "Being handled in another tab",
       "REJECT_CALL": "Reject",
       "JOIN_CALL": "Join call",
-      "END_CALL": "End call"
+      "END_CALL": "End call",
+      "CONNECTED": "Voice connected."
     },
     "INTERNAL_CHAT": {
       "TITLE": "Internal chat",
