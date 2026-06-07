@@ -180,7 +180,8 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
       'telegram' => Channel::Telegram,
       'whatsapp' => Channel::Whatsapp,
       'sms' => Channel::Sms,
-      'internal' => Channel::Internal
+      'internal' => Channel::Internal,
+      'voice' => Channel::Voice
     }[permitted_params[:channel][:type]]
   end
 
