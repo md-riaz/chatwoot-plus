@@ -391,6 +391,69 @@
         "SUBMIT_BUTTON": "Create Voice Channel",
         "API": {
           "ERROR_MESSAGE": "We were not able to create the voice channel"
+        },
+        "PROVIDERS": {
+          "LABEL": "Voice provider",
+          "TWILIO": "Twilio",
+          "CUSTOM": "Custom SIP/WebRTC"
+        },
+        "CUSTOM": {
+          "WEBRTC_WS_URL": {
+            "LABEL": "WebRTC WS URL",
+            "PLACEHOLDER": "wss://pbx.example.com/ws",
+            "REQUIRED": "This field is required"
+          },
+          "SIP_DOMAIN": {
+            "LABEL": "SIP domain",
+            "PLACEHOLDER": "pbx.example.com",
+            "REQUIRED": "This field is required"
+          },
+          "SIP_OUTBOUND_PROXY": {
+            "LABEL": "SIP outbound proxy",
+            "PLACEHOLDER": "sip:proxy.example.com;transport=wss"
+          },
+          "SIP_TRANSPORT": {
+            "LABEL": "SIP transport",
+            "WSS": "Secure WebSocket (WSS)",
+            "WS": "WebSocket (WS)"
+          },
+          "AUTH_TYPE": {
+            "LABEL": "Authentication type",
+            "JWT": "JWT",
+            "PASSWORD": "Username and password"
+          },
+          "TRANSFER_MODE": {
+            "LABEL": "Transfer mode",
+            "SIP_REFER": "SIP REFER",
+            "ARI": "ARI / API request"
+          },
+          "TRANSFER_API_URL": {
+            "LABEL": "Transfer API URL",
+            "PLACEHOLDER": "https://pbx.example.com/api/transfer",
+            "REQUIRED": "This field is required when ARI mode is selected"
+          },
+          "TRANSFER_API_TOKEN": {
+            "LABEL": "Transfer API token",
+            "PLACEHOLDER": "Optional bearer token"
+          },
+          "USE_AGENT_JWT": "Generate JWT from Chatwoot user profile",
+          "JWT_ISSUER": {
+            "LABEL": "JWT issuer",
+            "PLACEHOLDER": "pbx.example.com"
+          },
+          "JWT_AUDIENCE": {
+            "LABEL": "JWT audience",
+            "PLACEHOLDER": "webrtc-clients"
+          },
+          "JWT_SECRET": {
+            "LABEL": "JWT secret",
+            "PLACEHOLDER": "Enter JWT signing secret",
+            "REQUIRED": "This field is required"
+          },
+          "JWT_TTL": {
+            "LABEL": "JWT TTL (seconds)",
+            "PLACEHOLDER": "3600"
+          }
         }
       },
       "API_CHANNEL": {
@@ -528,7 +591,7 @@
           },
           "VOICE": {
             "TITLE": "Voice",
-            "DESCRIPTION": "Integrate with Twilio Voice"
+            "DESCRIPTION": "Integrate with Twilio or custom SIP voice"
           }
         }
       },

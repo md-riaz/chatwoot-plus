@@ -11,12 +11,14 @@ export const INBOX_TYPES = {
   SMS: 'Channel::Sms',
   INSTAGRAM: 'Channel::Instagram',
   TIKTOK: 'Channel::Tiktok',
+  VOICE: 'Channel::Voice',
 };
 
 // Add providers here as they gain voice capability (e.g., WhatsApp Cloud, Twilio WhatsApp)
 export const VOICE_CALL_PROVIDERS = {
   TWILIO: 'twilio',
   WHATSAPP: 'whatsapp',
+  CUSTOM: 'custom',
 };
 
 export const getVoiceCallProvider = inbox => {
@@ -25,6 +27,17 @@ export const getVoiceCallProvider = inbox => {
   // Callers pass either snake_case (raw API) or camelCase (after camelcaseKeys) shapes.
   const channelType = inbox.channel_type || inbox.channelType;
   const voiceEnabled = inbox.voice_enabled || inbox.voiceEnabled;
+  const provider = inbox.provider;
+
+  if (channelType === INBOX_TYPES.VOICE) {
+    if (provider === VOICE_CALL_PROVIDERS.CUSTOM) {
+      return VOICE_CALL_PROVIDERS.CUSTOM;
+    }
+    if (provider === VOICE_CALL_PROVIDERS.TWILIO) {
+      return VOICE_CALL_PROVIDERS.TWILIO;
+    }
+    return null;
+  }
 
   if (!voiceEnabled) return null;
 
@@ -121,7 +134,6 @@ export const getReadableInboxByType = (type, phoneNumber) => {
       return 'chat';
   }
 };
-
 export const getInboxClassByType = (type, phoneNumber) => {
   switch (type) {
     case INBOX_TYPES.WEB:

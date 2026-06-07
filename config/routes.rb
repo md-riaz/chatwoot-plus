@@ -168,7 +168,6 @@ Rails.application.routes.draw do
               get :reporting_events if ChatwootApp.enterprise?
             end
           end
-
           resources :search, only: [:index] do
             collection do
               get :conversations
@@ -263,8 +262,11 @@ Rails.application.routes.draw do
             post :register_webhook, on: :member
             post :reset_secret, on: :member
             if ChatwootApp.enterprise?
-              resource :conference, only: %i[create destroy], controller: 'conference' do
+              resource :conference, only: %i[create update destroy], controller: 'conference' do
                 get :token, on: :member
+                post :transfer, on: :member
+                post :incoming, on: :member
+                post :status, on: :member
               end
               post :enable_whatsapp_calling, on: :member
               post :disable_whatsapp_calling, on: :member
