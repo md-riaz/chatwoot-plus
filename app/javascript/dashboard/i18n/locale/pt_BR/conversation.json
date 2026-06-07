@@ -341,6 +341,28 @@
       "UNMUTE": "Desilenciar microfone",
       "VIEW_CHAT_HISTORY": "Ver histórico da conversa",
       "GO_TO_CONVERSATION": "Ir para a conversa"
+    },
+    "INTERNAL_CHAT": {
+      "TITLE": "Chat interno",
+      "DESCRIPTION": "Inicie uma conversa privada por texto com outros agentes.",
+      "NO_INBOX": "Nenhuma caixa de entrada de chat interno está disponível para sua conta.",
+      "INBOX_LABEL": "Caixa de entrada interna",
+      "INBOX_PLACEHOLDER": "Selecione uma caixa de entrada interna",
+      "TITLE_LABEL": "Título da conversa",
+      "OPTIONAL": "opcional",
+      "TITLE_PLACEHOLDER": "Adicione um título para este chat interno",
+      "PARTICIPANTS_LABEL": "Participantes",
+      "NO_PARTICIPANT_SELECTED": "Nenhum participante selecionado ainda.",
+      "ADD_PARTICIPANTS": "Adicionar participantes",
+      "ADD_ME": "Me adicionar",
+      "SEARCH_PARTICIPANTS": "Pesquisar agentes...",
+      "MESSAGE_LABEL": "Mensagem",
+      "MESSAGE_PLACEHOLDER": "Escreva sua mensagem interna",
+      "CANCEL": "Cancelar",
+      "SUBMIT": "Iniciar chat interno",
+      "SUCCESS": "Chat interno criado com sucesso.",
+      "GO_TO_CONVERSATION": "Abrir conversa",
+      "ERROR": "Não foi possível criar o chat interno."
     }
   },
   "EMAIL_TRANSCRIPT": {

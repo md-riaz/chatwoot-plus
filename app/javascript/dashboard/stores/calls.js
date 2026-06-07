@@ -1,4 +1,5 @@
 import TwilioVoiceClient from 'dashboard/api/channel/voice/twilioVoiceClient';
+import CustomVoiceClient from 'dashboard/api/channel/voice/customVoiceClient';
 import { cleanupWhatsappSession } from 'dashboard/composables/useWhatsappCallSession';
 import { VOICE_CALL_PROVIDERS } from 'dashboard/helper/inbox';
 import { TERMINAL_STATUSES } from 'dashboard/helper/voice';
@@ -7,9 +8,15 @@ import { defineStore } from 'pinia';
 const teardownByProvider = call => {
   if (call?.provider === VOICE_CALL_PROVIDERS.WHATSAPP) {
     cleanupWhatsappSession();
-  } else {
-    TwilioVoiceClient.endClientCall();
+    return;
   }
+
+  if (call?.provider === VOICE_CALL_PROVIDERS.CUSTOM) {
+    CustomVoiceClient.endClientCall();
+    return;
+  }
+
+  TwilioVoiceClient.endClientCall();
 };
 
 export const useCallsStore = defineStore('calls', {
@@ -31,7 +38,7 @@ export const useCallsStore = defineStore('calls', {
       const call = this.calls.find(c => c.callSid === callSid);
       // WhatsApp recordings live in the in-memory recorder until voice_call.ended
       // uploads them; tearing down here would race-wipe those chunks.
-      if (call?.provider === 'whatsapp') {
+      if (call?.provider === VOICE_CALL_PROVIDERS.WHATSAPP) {
         this.calls = this.calls.filter(c => c.callSid !== callSid);
         return;
       }
