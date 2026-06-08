@@ -26,6 +26,7 @@ const i18nMap = {
   'Channel::WebWidget': 'WEB_WIDGET',
   'Channel::TwitterProfile': 'TWITTER_PROFILE',
   'Channel::TwilioSms': 'TWILIO_SMS',
+  'Channel::Voice': 'VOICE',
   'Channel::Whatsapp': 'WHATSAPP',
   'Channel::Sms': 'SMS',
   'Channel::Email': 'EMAIL',
@@ -46,6 +47,9 @@ const twilioChannelName = () => {
 const readableChannelName = computed(() => {
   if (props.channelType === 'Channel::Api') {
     return globalConfig.value.apiChannelName || t('INBOX_MGMT.CHANNELS.API');
+  }
+  if (props.channelType === 'Channel::Voice') {
+    return t('INBOX_MGMT.CHANNELS.VOICE');
   }
   if (props.channelType === 'Channel::TwilioSms') {
     if (props.voiceEnabled) {
