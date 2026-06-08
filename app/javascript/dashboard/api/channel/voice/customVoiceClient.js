@@ -221,14 +221,9 @@ class CustomVoiceClient extends EventTarget {
       }
     }
     this.activeSession = null;
-    if (this.registerer) {
-      try {
-        this.registerer.unregister();
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.warn('[CustomVoiceClient] unregister skipped', { error });
-      }
-    }
+    // Keep the UA registered between calls so the browser can still receive
+    // inbound INVITEs and we do not churn REGISTER/unREGISTER on every
+    // terminal status update. Full teardown belongs in destroyDevice().
   }
 
   destroyDevice() {
