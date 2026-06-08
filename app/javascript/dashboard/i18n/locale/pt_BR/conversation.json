@@ -340,7 +340,13 @@
       "MUTE": "Silenciar microfone",
       "UNMUTE": "Desilenciar microfone",
       "VIEW_CHAT_HISTORY": "Ver histórico da conversa",
-      "GO_TO_CONVERSATION": "Ir para a conversa"
+      "GO_TO_CONVERSATION": "Ir para a conversa",
+      "DIALER_TITLE": "Discador",
+      "DIALER_NUMBER_LABEL": "Número de telefone",
+      "DIALER_BACKSPACE": "Apagar",
+      "DIALER_CLEAR": "Limpar",
+      "DIALER_CANCEL": "Cancelar",
+      "DIALER_CALL": "Ligar"
     },
     "INTERNAL_CHAT": {
       "TITLE": "Chat interno",

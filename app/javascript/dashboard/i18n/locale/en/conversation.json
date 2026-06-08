@@ -378,7 +378,13 @@
       "REJECT_CALL": "Reject",
       "JOIN_CALL": "Join call",
       "END_CALL": "End call",
-      "CONNECTED": "Voice connected."
+      "CONNECTED": "Voice connected.",
+      "DIALER_TITLE": "Dialer",
+      "DIALER_NUMBER_LABEL": "Phone number",
+      "DIALER_BACKSPACE": "Backspace",
+      "DIALER_CLEAR": "Clear",
+      "DIALER_CANCEL": "Cancel",
+      "DIALER_CALL": "Call"
     },
     "INTERNAL_CHAT": {
       "TITLE": "Internal chat",
