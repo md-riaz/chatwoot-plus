@@ -346,7 +346,11 @@
       "DIALER_BACKSPACE": "Apagar",
       "DIALER_CLEAR": "Limpar",
       "DIALER_CANCEL": "Cancelar",
-      "DIALER_CALL": "Ligar"
+      "DIALER_CALL": "Ligar",
+      "DIALER_EMPTY_NUMBER": "Informe um número de telefone.",
+      "DIALER_PICK_INBOX": "Selecione uma caixa de entrada de voz.",
+      "DIALER_INVALID_NUMBER": "Informe um número de telefone válido.",
+      "DIALER_FAILED": "Não foi possível iniciar a chamada. Tente novamente."
     },
     "INTERNAL_CHAT": {
       "TITLE": "Chat interno",

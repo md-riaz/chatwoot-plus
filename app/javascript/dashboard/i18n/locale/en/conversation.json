@@ -384,7 +384,11 @@
       "DIALER_BACKSPACE": "Backspace",
       "DIALER_CLEAR": "Clear",
       "DIALER_CANCEL": "Cancel",
-      "DIALER_CALL": "Call"
+      "DIALER_CALL": "Call",
+      "DIALER_EMPTY_NUMBER": "Enter phone number.",
+      "DIALER_PICK_INBOX": "Select voice inbox.",
+      "DIALER_INVALID_NUMBER": "Enter valid phone number.",
+      "DIALER_FAILED": "Call could not start. Try again."
     },
     "INTERNAL_CHAT": {
       "TITLE": "Internal chat",
