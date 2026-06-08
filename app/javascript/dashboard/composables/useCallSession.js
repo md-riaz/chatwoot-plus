@@ -172,7 +172,10 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
           callSid,
         });
 
-        const target = joinResponse?.sip_target || joinResponse?.conference_sid;
+        const target =
+          joinResponse?.sip_target ||
+          joinResponse?.to ||
+          joinResponse?.conference_sid;
         await CustomVoiceClient.joinClientCall({
           to: target,
           conversationId,
