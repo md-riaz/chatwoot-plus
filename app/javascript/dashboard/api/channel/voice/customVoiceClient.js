@@ -70,16 +70,23 @@ class CustomVoiceClient extends EventTarget {
       force,
     });
     const response = await VoiceAPI.getToken(inboxId);
-    const { webrtc, provider, password } = response || {};
+    const {
+      webrtc,
+      provider,
+      password,
+      token,
+      auth_type: authType,
+    } = response || {};
     if (provider !== 'custom') throw new Error('Invalid provider');
     if (!webrtc?.ws_url || !webrtc?.sip_domain) {
       throw new Error('Invalid WebRTC config');
     }
 
-    const credential = password;
+    const credential = password || token;
+    const resolvedAuthType = authType || (password ? 'password' : 'jwt');
 
     if (!credential) {
-      throw new Error('Missing WebRTC password');
+      throw new Error('Missing WebRTC credential');
     }
 
     const username = webrtc.username;
@@ -106,7 +113,7 @@ class CustomVoiceClient extends EventTarget {
       wsUrl: webrtc.ws_url,
       sipDomain: webrtc.sip_domain,
       username,
-      hasPassword: !!credential,
+      hasPassword: !!password,
       hasCredential: !!credential,
       hasIceServers: !!iceServers.length,
     });
@@ -137,7 +144,7 @@ class CustomVoiceClient extends EventTarget {
 
     this.webrtcConfig = webrtc;
     this.token = credential;
-    this.authType = 'password';
+    this.authType = resolvedAuthType;
     this.initialized = true;
     this.inboxId = inboxId;
     this.reconnectAttempt = 0;

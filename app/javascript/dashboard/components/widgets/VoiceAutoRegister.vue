@@ -46,7 +46,7 @@ const validateTokenResponse = data => {
   if (!data || data.provider !== 'custom') return false;
   if (!data.webrtc?.ws_url || !data.webrtc?.sip_domain) return false;
   if (!data.webrtc?.username) return false;
-  return !!data.password;
+  return !!(data.password || data.token);
 };
 
 async function resolveInboxWithCredentials() {
