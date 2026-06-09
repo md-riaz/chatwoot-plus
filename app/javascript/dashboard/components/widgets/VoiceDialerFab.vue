@@ -20,7 +20,6 @@ const isCalling = ref(false);
 const dialNumber = ref('');
 const selectedInboxId = ref('');
 const showMenu = ref(false);
-const isHidden = ref(false);
 
 const resolveRegionFromLocale = locale => {
   if (!locale) return null;
@@ -150,31 +149,9 @@ const closeDialer = () => {
   showDialer.value = false;
 };
 
-const hideFab = () => {
-  showMenu.value = false;
-  isHidden.value = true;
-};
-
-const showFab = () => {
-  isHidden.value = false;
-};
-
 const resetPosition = () => {
   showMenu.value = false;
   setDefaultPosition();
-};
-
-const handlePointerDown = event => {
-  if (event.button !== 0) return;
-  const rect = fabRef.value?.getBoundingClientRect();
-  if (!rect) return;
-
-  isDragging.value = true;
-  hasDragged.value = false;
-  dragStart.value = { x: event.clientX, y: event.clientY };
-  dragOffset.value = { x: event.clientX - rect.left, y: event.clientY - rect.top };
-  window.addEventListener('pointermove', handlePointerMove);
-  window.addEventListener('pointerup', handlePointerUp, { once: true });
 };
 
 const handlePointerMove = event => {
@@ -201,6 +178,22 @@ const handlePointerUp = () => {
   isDragging.value = false;
   window.removeEventListener('pointermove', handlePointerMove);
   storePosition(position.value);
+};
+
+const handlePointerDown = event => {
+  if (event.button !== 0) return;
+  const rect = fabRef.value?.getBoundingClientRect();
+  if (!rect) return;
+
+  isDragging.value = true;
+  hasDragged.value = false;
+  dragStart.value = { x: event.clientX, y: event.clientY };
+  dragOffset.value = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
+  window.addEventListener('pointermove', handlePointerMove);
+  window.addEventListener('pointerup', handlePointerUp, { once: true });
 };
 
 const handleResize = () => clampPosition();
@@ -281,14 +274,6 @@ const startCall = async () => {
 };
 
 watch(
-  () => callsStore.hasIncomingCall,
-  hasIncoming => {
-    if (hasIncoming) showFab();
-  },
-  { immediate: true }
-);
-
-watch(
   hasVoiceInbox,
   hasVoice => {
     if (!hasVoice) return;
@@ -312,7 +297,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    v-if="hasVoiceInbox && !isHidden"
+    v-if="hasVoiceInbox"
     ref="fabRef"
     class="fixed z-50"
     :style="positionStyle"
@@ -328,12 +313,6 @@ onUnmounted(() => {
         >
           {{ t('CONVERSATION.VOICE_WIDGET.DIALER_MOVE') }}
         </button>
-        <button
-          class="px-3 py-2 text-sm text-n-slate-12 hover:bg-n-slate-3 rounded-lg"
-          @click="hideFab"
-        >
-          {{ t('CONVERSATION.VOICE_WIDGET.DIALER_HIDE') }}
-        </button>
       </div>
 
       <div class="flex items-center gap-2">
@@ -341,7 +320,9 @@ onUnmounted(() => {
           class="w-12 h-12 rounded-full bg-n-slate-3 hover:bg-n-slate-4 border border-n-strong flex items-center justify-center"
           @click="showMenu = !showMenu"
         >
-          <i class="text-lg text-n-slate-12 i-ph-dots-three-outline-vertical-bold" />
+          <i
+            class="text-lg text-n-slate-12 i-ph-dots-three-outline-vertical-bold"
+          />
         </button>
         <button
           class="w-14 h-14 rounded-full bg-n-teal-9 hover:bg-n-teal-10 shadow-xl border border-n-strong flex items-center justify-center"
@@ -355,12 +336,12 @@ onUnmounted(() => {
     </div>
   </div>
 
-    <woot-modal
-      v-model:show="showDialer"
-      :on-close="closeDialer"
-      size="modal-voice-dialer"
-    >
-      <div class="flex flex-col gap-4 p-6 w-[22rem] max-w-[22rem]">
+  <woot-modal
+    v-model:show="showDialer"
+    :on-close="closeDialer"
+    size="modal-voice-dialer"
+  >
+    <div class="flex flex-col gap-4 p-6 w-[22rem] max-w-[22rem]">
       <h3 class="text-base font-medium text-n-slate-12">
         {{ t('CONVERSATION.VOICE_WIDGET.DIALER_TITLE') }}
       </h3>
@@ -373,7 +354,9 @@ onUnmounted(() => {
           v-model="dialNumber"
           type="text"
           class="rounded-md border border-n-strong bg-transparent px-3 py-2 text-sm text-n-slate-12"
-          :placeholder="t('CONVERSATION.VOICE_WIDGET.DIALER_NUMBER_PLACEHOLDER')"
+          :placeholder="
+            t('CONVERSATION.VOICE_WIDGET.DIALER_NUMBER_PLACEHOLDER')
+          "
         />
       </label>
 
@@ -385,8 +368,14 @@ onUnmounted(() => {
           v-model="selectedInboxId"
           class="rounded-md border border-n-strong bg-transparent px-3 py-2 text-sm"
         >
-          <option disabled value="">--</option>
-          <option v-for="inbox in voiceInboxes" :key="inbox.id" :value="inbox.id">
+          <option disabled value="">
+            {{ t('CONVERSATION.VOICE_WIDGET.DIALER_SELECT_INBOX_PLACEHOLDER') }}
+          </option>
+          <option
+            v-for="inbox in voiceInboxes"
+            :key="inbox.id"
+            :value="inbox.id"
+          >
             {{ inbox.name }}
           </option>
         </select>
