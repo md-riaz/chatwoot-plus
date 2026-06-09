@@ -19,7 +19,7 @@ class Voice::OutboundCallBuilder
 
     ActiveRecord::Base.transaction do
       contact_inbox = ensure_contact_inbox!
-      conversation = @existing_conversation || create_conversation!(contact_inbox)
+      conversation = @existing_conversation || find_reusable_conversation(contact_inbox) || create_conversation!(contact_inbox)
       call_sid = initiate_call!
       call = create_call!(conversation, call_sid)
       message = Voice::CallMessageBuilder.new(call).perform!
@@ -37,6 +37,16 @@ class Voice::OutboundCallBuilder
     ) do |record|
       record.source_id = contact.phone_number
     end
+  end
+
+  def find_reusable_conversation(contact_inbox)
+    return unless inbox.lock_to_single_conversation?
+
+    conversation = contact_inbox.conversations.order(created_at: :desc).first
+    return unless conversation
+
+    conversation.open! unless conversation.open?
+    conversation
   end
 
   def create_conversation!(contact_inbox)

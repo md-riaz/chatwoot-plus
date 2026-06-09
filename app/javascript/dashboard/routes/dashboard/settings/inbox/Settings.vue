@@ -304,6 +304,7 @@ export default {
     },
     canLocktoSingleConversation() {
       return (
+        this.channelType === INBOX_TYPES.VOICE ||
         this.isASmsInbox ||
         this.isAWhatsAppChannel ||
         this.isAFacebookInbox ||

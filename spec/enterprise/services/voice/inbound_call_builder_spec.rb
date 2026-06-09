@@ -136,10 +136,19 @@ RSpec.describe Voice::InboundCallBuilder do
 
     before { inbox.update!(lock_to_single_conversation: true) }
 
-    it 'reuses the most recent non-resolved conversation' do
+    it 'reuses the latest conversation' do
       call = nil
       expect { call = perform_builder }.not_to change(account.conversations, :count)
       expect(call.conversation).to eq(existing_open_conversation)
+    end
+
+    it 'reopens a resolved conversation before adding the call message' do
+      existing_open_conversation.update!(status: :resolved)
+
+      call = perform_builder
+
+      expect(call.conversation).to eq(existing_open_conversation)
+      expect(existing_open_conversation.reload).to be_open
     end
 
     it 'still creates a new Call and voice_call message on the reused conversation' do

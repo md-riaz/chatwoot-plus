@@ -55,6 +55,8 @@ export const channelActions = {
       const response = await InboxesAPI.create(
         buildInboxData({
           name: params.name,
+          lock_to_single_conversation:
+            params.lock_to_single_conversation ?? true,
           channel: { ...params.voice, type: 'voice' },
         })
       );

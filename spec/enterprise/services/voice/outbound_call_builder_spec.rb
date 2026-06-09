@@ -79,5 +79,24 @@ RSpec.describe Voice::OutboundCallBuilder do
         )
       end.to raise_error(ArgumentError, 'Agent required')
     end
+
+    context 'when the inbox has lock_to_single_conversation enabled' do
+      let!(:contact_inbox) { create(:contact_inbox, contact: contact, inbox: inbox, source_id: contact.phone_number) }
+      let!(:existing_conversation) do
+        create(:conversation, account: account, inbox: inbox, contact: contact, contact_inbox: contact_inbox, status: :resolved)
+      end
+
+      before { inbox.update!(lock_to_single_conversation: true) }
+
+      it 'reuses and reopens the latest conversation' do
+        call = nil
+
+        expect { call = described_class.perform!(account: account, inbox: inbox, user: user, contact: contact) }
+          .not_to change(account.conversations, :count)
+
+        expect(call.conversation).to eq(existing_conversation)
+        expect(existing_conversation.reload).to be_open
+      end
+    end
   end
 end

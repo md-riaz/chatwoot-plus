@@ -84,12 +84,16 @@ class Voice::InboundCallBuilder
 
   # Mirror incoming-message routing: reuse the open conversation (or the last one when locked), else create new.
   def resolve_conversation!(contact, contact_inbox)
-    reusable = if inbox.lock_to_single_conversation
-                 contact_inbox.conversations.last
+    reusable = if inbox.lock_to_single_conversation?
+                 contact_inbox.conversations.order(created_at: :desc).first
                else
-                 contact_inbox.conversations.where.not(status: :resolved).last
+                 contact_inbox.conversations.where.not(status: :resolved).order(created_at: :desc).first
                end
-    return reusable if reusable
+
+    if reusable
+      reusable.open! if inbox.lock_to_single_conversation? && !reusable.open?
+      return reusable
+    end
 
     account.conversations.create!(
       contact_inbox_id: contact_inbox.id,
