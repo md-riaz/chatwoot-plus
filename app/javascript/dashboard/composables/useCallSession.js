@@ -134,10 +134,13 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
     }
   };
 
-  const joinCall = async ({ conversationId, inboxId, callSid }) => {
+  const joinCall = async ({ conversationId, inboxId, callSid, provider }) => {
     if (globalIsJoining.value) return null;
 
-    const call = findCall(callSid);
+    const storedCall = findCall(callSid);
+    const call = storedCall
+      ? { ...storedCall, provider: storedCall.provider || provider }
+      : { provider };
     // Outbound *WhatsApp* calls have no separate join step — the offer was
     // sent at initiate time and the answer is applied by the cable handler.
     // Routing through acceptIncomingCall here would call prepareInboundAnswer →
