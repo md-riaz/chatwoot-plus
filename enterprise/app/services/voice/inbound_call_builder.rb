@@ -113,7 +113,6 @@ class Voice::InboundCallBuilder
       reusable.open! if inbox.lock_to_single_conversation? && !reusable.open?
       return reusable
     end
-
     account.conversations.create!(
       contact_inbox_id: contact_inbox.id,
       inbox_id: inbox.id,
@@ -132,7 +131,7 @@ class Voice::InboundCallBuilder
       direction: :incoming,
       status: 'ringing',
       provider_call_id: call_sid,
-      meta: { 'initiated_at' => Time.zone.now.to_i }.merge(extra_meta.stringify_keys)
+      meta: { 'initiated_at' => Time.zone.now.to_i, 'from_number' => from_number }.merge(extra_meta.stringify_keys)
     )
     # `conference_sid` is a Twilio bridging concept; WhatsApp goes browser↔Meta.
     call.update!(conference_sid: call.default_conference_sid) if call.twilio?

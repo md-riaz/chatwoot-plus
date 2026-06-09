@@ -118,6 +118,7 @@ RSpec.describe Voice::InboundCallBuilder do
         expect(call.contact.identifier).to eq("voice:#{inbox.id}:102")
         expect(call.contact.name).to eq('102')
         expect(call.conversation.contact_inbox.source_id).to eq('102')
+        expect(call.from_number).to eq('102')
         expect(call.provider_call_id).to eq(call_sid)
         expect(call.provider).to eq('custom')
       end

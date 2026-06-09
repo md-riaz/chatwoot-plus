@@ -95,7 +95,7 @@ class Call < ApplicationRecord
   end
 
   def from_number
-    incoming? ? contact.phone_number : inbox.channel&.phone_number
+    incoming? ? meta['from_number'].presence || contact.phone_number : inbox.channel&.phone_number
   end
 
   def to_number
