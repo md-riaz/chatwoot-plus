@@ -95,7 +95,15 @@ class Call < ApplicationRecord
   end
 
   def from_number
-    incoming? ? meta['from_number'].presence || contact.phone_number : inbox.channel&.phone_number
+    return inbox.channel&.phone_number unless incoming?
+
+    meta['from_number'].presence || contact.phone_number || custom_source_id
+  end
+
+  def custom_source_id
+    return unless custom?
+
+    conversation.contact_inbox&.source_id
   end
 
   def to_number

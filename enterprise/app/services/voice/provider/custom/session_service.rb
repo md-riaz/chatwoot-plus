@@ -32,7 +32,7 @@ class Voice::Provider::Custom::SessionService
   end
 
   def contact_phone_number
-    call.contact&.phone_number || call.from_number || last_call_number
+    call.contact&.phone_number || call.from_number || call.conversation.contact_inbox&.source_id || last_call_number
   end
 
   def last_call_number
