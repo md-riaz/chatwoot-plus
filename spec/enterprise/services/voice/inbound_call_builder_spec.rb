@@ -100,6 +100,30 @@ RSpec.describe Voice::InboundCallBuilder do
     end
   end
 
+  context 'when a custom SIP inbound call comes from an internal extension' do
+    let(:channel) { create(:channel_voice, account: account, provider: 'custom') }
+    let(:from_number) { '102' }
+    let(:call_sid) { '193e9e9a-de7b-123f-70a7-ba670188bf72' }
+
+    it 'creates the caller contact without using the extension as phone_number' do
+      call = described_class.perform!(
+        inbox: inbox,
+        from_number: from_number,
+        call_sid: call_sid,
+        provider: :custom
+      )
+
+      aggregate_failures do
+        expect(call.contact.phone_number).to be_nil
+        expect(call.contact.identifier).to eq("voice:#{inbox.id}:102")
+        expect(call.contact.name).to eq('102')
+        expect(call.conversation.contact_inbox.source_id).to eq('102')
+        expect(call.provider_call_id).to eq(call_sid)
+        expect(call.provider).to eq('custom')
+      end
+    end
+  end
+
   context 'when the WhatsApp wa_id needs Brazil normalization to match an existing ContactInbox' do
     let(:whatsapp_channel) do
       create(:channel_whatsapp, account: account, provider: 'whatsapp_cloud',

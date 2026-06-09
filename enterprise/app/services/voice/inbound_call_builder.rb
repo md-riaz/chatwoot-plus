@@ -59,11 +59,30 @@ class Voice::InboundCallBuilder
   end
 
   def ensure_contact!
+    return ensure_extension_contact! if custom_extension_caller?
+
     contact = account.contacts.find_or_create_by!(phone_number: from_number) do |record|
       record.name = contact_name.presence || from_number
     end
     contact.update!(name: contact_name) if contact_name.present? && contact.name == from_number
     contact
+  end
+
+  def ensure_extension_contact!
+    identifier = "voice:#{inbox.id}:#{from_number}"
+    contact = account.contacts.find_or_create_by!(identifier: identifier) do |record|
+      record.name = contact_name.presence || from_number
+    end
+    contact.update!(name: contact_name) if contact_name.present? && contact.name == from_number
+    contact
+  end
+
+  def custom_extension_caller?
+    provider == :custom && !e164_number?(from_number)
+  end
+
+  def e164_number?(value)
+    value.to_s.match?(/\A\+[1-9]\d{1,14}\z/)
   end
 
   # WhatsApp inbound calls carry the caller's profile name in extra_meta; Twilio
