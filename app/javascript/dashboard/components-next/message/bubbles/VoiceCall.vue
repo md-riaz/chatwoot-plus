@@ -243,6 +243,7 @@ const handleJoinCall = async () => {
     inboxId: inboxId.value,
     callSid: callSid.value,
     provider: call.value?.provider,
+    callDirection: call.value?.direction,
   });
 };
 

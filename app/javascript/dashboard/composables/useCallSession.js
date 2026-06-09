@@ -134,13 +134,23 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
     }
   };
 
-  const joinCall = async ({ conversationId, inboxId, callSid, provider }) => {
+  const joinCall = async ({
+    conversationId,
+    inboxId,
+    callSid,
+    provider,
+    callDirection,
+  }) => {
     if (globalIsJoining.value) return null;
 
     const storedCall = findCall(callSid);
     const call = storedCall
-      ? { ...storedCall, provider: storedCall.provider || provider }
-      : { provider };
+      ? {
+          ...storedCall,
+          provider: storedCall.provider || provider,
+          callDirection: storedCall.callDirection || callDirection,
+        }
+      : { provider, callDirection };
     // Outbound *WhatsApp* calls have no separate join step — the offer was
     // sent at initiate time and the answer is applied by the cable handler.
     // Routing through acceptIncomingCall here would call prepareInboundAnswer →
@@ -168,6 +178,32 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
       }
       if (isCustomCall(call)) {
         await CustomVoiceClient.initializeDevice(inboxId);
+
+        const isInboundCustomCall = [
+          VOICE_CALL_DIRECTION.INCOMING,
+          VOICE_CALL_DIRECTION.INBOUND,
+        ].includes(call?.callDirection);
+
+        if (isInboundCustomCall) {
+          const accepted = await CustomVoiceClient.acceptIncomingCall({
+            callSid,
+          });
+
+          if (!accepted) {
+            throw new Error(t('CONTACT_PANEL.CALL_FAILED'));
+          }
+
+          const joinResponse = await VoiceAPI.joinConference({
+            conversationId,
+            inboxId,
+            callSid,
+          });
+
+          callsStore.setCallActive(callSid);
+          globalDurationTimer?.start();
+
+          return { conferenceSid: joinResponse?.conference_sid };
+        }
 
         const joinResponse = await VoiceAPI.joinConference({
           conversationId,
