@@ -110,6 +110,7 @@ describe ConversationFinder do
                                        mine_count: 2,
                                        assigned_count: 3,
                                        unassigned_count: 1,
+                                       group_count: 0,
                                        all_count: 4
                                      })
       end
@@ -205,6 +206,7 @@ describe ConversationFinder do
                                        mine_count: 2,
                                        assigned_count: 3,
                                        unassigned_count: 1,
+                                       group_count: 0,
                                        all_count: 4
                                      })
       end

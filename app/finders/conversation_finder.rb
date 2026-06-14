@@ -40,37 +40,23 @@ class ConversationFinder
   def perform
     set_up
 
-    mine_count, unassigned_count, all_count, group_count = set_count_for_all_conversations
-    assigned_count = all_count - unassigned_count
+    count = set_count_for_all_conversations
 
     filter_by_assignee_type
 
     {
       conversations: conversations,
-      count: {
-        mine_count: mine_count,
-        assigned_count: assigned_count,
-        unassigned_count: unassigned_count,
-        all_count: all_count,
-        group_count: group_count
-      }
+      count: count
     }
   end
 
   def perform_meta_only
     set_up
 
-    mine_count, unassigned_count, all_count, group_count = set_count_for_all_conversations
-    assigned_count = all_count - unassigned_count
+    count = set_count_for_all_conversations
 
     {
-      count: {
-        mine_count: mine_count,
-        assigned_count: assigned_count,
-        unassigned_count: unassigned_count,
-        all_count: all_count,
-        group_count: group_count
-      }
+      count: count
     }
   end
 
@@ -126,31 +112,21 @@ class ConversationFinder
   end
 
   def filter_by_assignee_type
-    case @assignee_type
-    when 'me'
-      @conversations = @conversations.assigned_to(current_user)
-    when 'unassigned'
-      @conversations = @conversations.non_group_conversations.unassigned
-    when 'groups'
-      @conversations = @conversations.group_conversations
-    when 'assigned'
-      @conversations = @conversations.assigned
-    end
+    @conversations = Plus::ConversationFinderExtension.filter_by_assignee_type(
+      @conversations,
+      @assignee_type,
+      current_user
+    )
     @conversations
   end
 
   def filter_by_conversation_type
-    case @params[:conversation_type]
-    when 'mention'
-      conversation_ids = current_account.mentions.where(user: current_user).pluck(:conversation_id)
-      @conversations = @conversations.where(id: conversation_ids)
-    when 'participating'
-      @conversations = current_user.participating_conversations.where(account_id: current_account.id)
-    when 'unattended'
-      @conversations = @conversations.unattended
-    when 'internal'
-      @conversations = @conversations.where(inbox_id: current_account.inboxes.where(channel_type: 'Channel::Internal'))
-    end
+    @conversations = Plus::ConversationFinderExtension.filter_by_conversation_type(
+      @conversations,
+      @params[:conversation_type],
+      current_account,
+      current_user
+    )
     @conversations
   end
 
@@ -190,25 +166,7 @@ class ConversationFinder
   end
 
   def set_count_for_all_conversations
-    return legacy_count_for_all_conversations if @conversations.limit_value || @conversations.offset_value || @conversations.eager_loading?
-
-    conversation_table = Conversation.arel_table
-    counts = @conversations.unscope(:order).pick(
-      Arel.sql("COUNT(*) FILTER (WHERE assignee_id = #{current_user.id})"),
-      Arel.sql("COUNT(*) FILTER (WHERE assignee_id IS NULL AND #{conversation_table[:group].eq(false).to_sql})"),
-      Arel.sql('COUNT(*)'),
-      Arel.sql("COUNT(*) FILTER (WHERE #{conversation_table[:group].eq(true).to_sql})")
-    )
-    counts || [0, 0, 0, 0]
-  end
-
-  def legacy_count_for_all_conversations
-    [
-      @conversations.assigned_to(current_user).count,
-      @conversations.non_group_conversations.unassigned.count,
-      @conversations.count,
-      @conversations.group_conversations.count
-    ]
+    Plus::ConversationFinderExtension.counts(@conversations, current_user)
   end
 
   def current_page
