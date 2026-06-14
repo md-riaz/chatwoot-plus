@@ -190,6 +190,19 @@ class ConversationFinder
   end
 
   def set_count_for_all_conversations
+    return legacy_count_for_all_conversations if @conversations.limit_value || @conversations.offset_value || @conversations.eager_loading?
+
+    conversation_table = Conversation.arel_table
+    counts = @conversations.unscope(:order).pick(
+      Arel.sql("COUNT(*) FILTER (WHERE assignee_id = #{current_user.id})"),
+      Arel.sql("COUNT(*) FILTER (WHERE assignee_id IS NULL AND #{conversation_table[:group].eq(false).to_sql})"),
+      Arel.sql('COUNT(*)'),
+      Arel.sql("COUNT(*) FILTER (WHERE #{conversation_table[:group].eq(true).to_sql})")
+    )
+    counts || [0, 0, 0, 0]
+  end
+
+  def legacy_count_for_all_conversations
     [
       @conversations.assigned_to(current_user).count,
       @conversations.non_group_conversations.unassigned.count,
