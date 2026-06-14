@@ -18,12 +18,19 @@ class Voice::Provider::Custom::TransferService
     response = HTTParty.post(
       config['transfer_api_url'],
       headers: transfer_headers,
-      body: transfer_payload.to_json
+      body: transfer_payload.to_json,
+      timeout: 5
     )
 
     {
       code: response.code,
       body: response.body
+    }
+  rescue Net::OpenTimeout, Net::ReadTimeout, SocketError, Errno::ECONNREFUSED, HTTParty::Error => e
+    Rails.logger.error("Custom voice transfer failed: #{e.class}: #{e.message}")
+    {
+      code: 500,
+      body: { error: 'Failed to contact transfer API' }.to_json
     }
   end
 
@@ -48,10 +55,14 @@ class Voice::Provider::Custom::TransferService
 
   def refer_target
     username = target_inbox_member&.webrtc_username.presence ||
-      target_agent.custom_attributes&.dig('webrtc_username').presence ||
-      target_agent.email
-    domain = config['sip_domain']
-    "sip:#{username}@#{domain}"
+      target_agent.custom_attributes&.dig('webrtc_username').presence
+    return "sip:#{username}@#{config['sip_domain']}" if username.present?
+
+    email = target_agent.email.to_s
+    return email if email.start_with?('sip:')
+    return "sip:#{email.split('@').first}@#{config['sip_domain']}" if email.include?('@')
+
+    raise ArgumentError, 'Target agent does not have a SIP username'
   end
 
   def transfer_mode

@@ -76,11 +76,15 @@ class Voice::OutboundCallBuilder
       provider_call_id: call_sid,
       meta: { 'initiated_at' => Time.zone.now.to_i }
     )
-    call.update!(conference_sid: call.default_conference_sid) unless call.custom?
+    call.update!(conference_sid: provider_conference_sid || call.default_conference_sid)
     call
   end
 
   def provider_key
-    inbox.channel.provider.to_s == 'custom' ? :custom : :twilio
+    inbox.channel.respond_to?(:provider) && inbox.channel.provider.to_s == 'custom' ? :custom : :twilio
+  end
+
+  def provider_conference_sid
+    @provider_response[:conference_sid] || @provider_response['conference_sid']
   end
 end

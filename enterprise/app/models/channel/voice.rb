@@ -84,6 +84,8 @@ class Channel::Voice < ApplicationRecord
   end
 
   def normalize_custom_provider_config
+    return if provider_config.blank?
+
     cfg = provider_config_hash.with_indifferent_access
     ws_url = cfg[:webrtc_ws_url].to_s.strip
     return if ws_url.blank?
@@ -133,6 +135,9 @@ class Channel::Voice < ApplicationRecord
     else
       JSON.parse(provider_config.to_s)
     end
+  rescue JSON::ParserError, TypeError
+    errors.add(:provider_config, 'must be valid JSON')
+    {}
   end
 
 

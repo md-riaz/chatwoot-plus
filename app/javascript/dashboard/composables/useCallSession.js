@@ -290,16 +290,21 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
         } else {
           await whatsappSession.rejectIncomingCall(call.callId);
         }
+      } else if (isCustomCall(call)) {
+        CustomVoiceClient.rejectIncomingCall({ callSid });
+        if (call?.inboxId && call?.conversationId) {
+          await VoiceAPI.leaveConference({
+            inboxId: call.inboxId,
+            conversationId: call.conversationId,
+            callSid,
+          });
+        }
       } else if (call?.inboxId && call?.conversationId) {
-        // Browser-based providers haven't joined the local session yet here, so
-        // end the provider-side leg first and let the local client stay a no-op.
         await VoiceAPI.leaveConference({
           inboxId: call.inboxId,
           conversationId: call.conversationId,
           callSid,
         });
-      } else if (isCustomCall(call)) {
-        CustomVoiceClient.endClientCall();
       } else {
         TwilioVoiceClient.endClientCall();
       }
@@ -327,7 +332,14 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
       callSid,
     });
 
-    if (response?.mode === 'sip_refer' && response?.refer_to) {
+    const activeCall = callsStore.activeCall;
+    if (
+      response?.mode === 'sip_refer' &&
+      response?.refer_to &&
+      activeCall?.callSid === callSid &&
+      activeCall?.inboxId === inboxId &&
+      isCustomCall(activeCall)
+    ) {
       CustomVoiceClient.transferCall({
         referTo: response.refer_to,
       });

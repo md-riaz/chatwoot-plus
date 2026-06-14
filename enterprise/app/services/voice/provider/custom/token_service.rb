@@ -86,6 +86,7 @@ class Voice::Provider::Custom::TokenService
     servers = []
 
     stun_urls = Array.wrap(config['stun_servers']).map(&:presence).compact
+    stun_urls = [Call::DEFAULT_STUN_URL] if stun_urls.blank?
     servers.concat(stun_urls.map { |url| { urls: url } })
 
     Array.wrap(config['turn_servers']).each do |entry|

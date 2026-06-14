@@ -62,7 +62,10 @@ class CustomVoiceClient extends EventTarget {
     this.recordedRemoteStream = null;
   }
 
-  async initializeDevice(inboxId, { force = false, reason = 'manual' } = {}) {
+  async initializeDevice(
+    inboxId,
+    { force = false, reason = 'manual', tokenResponse = null } = {}
+  ) {
     if (
       !force &&
       this.initialized &&
@@ -82,7 +85,7 @@ class CustomVoiceClient extends EventTarget {
       reason,
       force,
     });
-    const response = await VoiceAPI.getToken(inboxId);
+    const response = tokenResponse || (await VoiceAPI.getToken(inboxId));
     const {
       webrtc,
       provider,

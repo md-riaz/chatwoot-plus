@@ -18,7 +18,7 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
     call = resolve_call!
 
     if call.custom?
-      call.update!(accepted_by_agent: current_user) if call.accepted_by_agent_id != current_user.id
+      accept_custom_call!(call)
       response = Voice::Provider::Custom::SessionService.new(
         call: call,
         inbox: @voice_inbox,
@@ -81,6 +81,8 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
     call = resolve_call!
     rejecting = agent_rejecting_before_pickup?(call)
 
+    finalize_as_agent_reject!(call) if rejecting
+
     if call.custom?
       Voice::Provider::Custom::SessionService.new(
         call: call,
@@ -90,8 +92,6 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
     else
       Voice::Provider::Twilio::ConferenceService.new(call: call).end_conference
     end
-
-    finalize_as_agent_reject!(call) if rejecting
     render json: { status: 'success', id: call.conversation.display_id }
   end
 
@@ -146,7 +146,7 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
   end
 
   def provider
-    @provider ||= @voice_inbox.channel.provider
+    @provider ||= @voice_inbox.channel.respond_to?(:provider) ? @voice_inbox.channel.provider : 'twilio'
   end
 
   def token_service
@@ -187,6 +187,14 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
     render json: { error: error.message }, status: :conflict
   end
 
+  def accept_custom_call!(call)
+    call.with_lock do
+      call.reload
+      raise CustomExceptions::CallAlreadyAccepted, 'Call has already been accepted' if call.accepted_by_agent_id.present? && call.accepted_by_agent_id != current_user.id
+
+      call.update!(accepted_by_agent: current_user) if call.accepted_by_agent_id.blank?
+    end
+  end
   def agent_rejecting_before_pickup?(call)
     call.ringing? && call.accepted_by_agent_id.nil?
   end

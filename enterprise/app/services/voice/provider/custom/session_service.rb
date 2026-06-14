@@ -9,7 +9,8 @@ class Voice::Provider::Custom::SessionService
       id: call.conversation.display_id,
       conference_sid: call.conference_sid,
       using_webrtc: true,
-      to: contact_phone_number
+      to: contact_phone_number,
+      sip_target: contact_phone_number
     }
   end
 

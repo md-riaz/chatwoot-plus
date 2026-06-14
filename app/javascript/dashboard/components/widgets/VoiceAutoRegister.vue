@@ -54,7 +54,9 @@ async function resolveInboxWithCredentials() {
     customVoiceInboxes.value.map(async inbox => {
       try {
         const response = await VoiceAPI.getToken(inbox.id);
-        return validateTokenResponse(response) ? inbox : null;
+        return validateTokenResponse(response)
+          ? { inbox, token: response }
+          : null;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.warn('[VoiceAutoRegister] token check failed', {
@@ -87,7 +89,8 @@ attemptRegister = async reason => {
 
   isRegistering.value = true;
   try {
-    const inbox = await resolveInboxWithCredentials();
+    const resolved = await resolveInboxWithCredentials();
+    const inbox = resolved?.inbox;
     if (!inbox?.id) {
       // eslint-disable-next-line no-console
       console.log('[VoiceAutoRegister] no valid credentials, retry later');
@@ -105,7 +108,10 @@ attemptRegister = async reason => {
       inboxId: inbox.id,
       reason,
     });
-    await CustomVoiceClient.initializeDevice(inbox.id);
+    await CustomVoiceClient.initializeDevice(inbox.id, {
+      tokenResponse: resolved.token,
+      reason: 'auto-register',
+    });
     // eslint-disable-next-line no-console
     console.log('[VoiceAutoRegister] register success', { inboxId: inbox.id });
     if (alertedInboxId.value !== inbox.id) {
@@ -128,6 +134,7 @@ watch(
   inboxList => {
     if (!inboxList.length) {
       clearTimer();
+      CustomVoiceClient.destroyDevice();
       retryIndex.value = 0;
       lastInboxId.value = null;
       alertedInboxId.value = null;
@@ -140,6 +147,7 @@ watch(
 
 onUnmounted(() => {
   clearTimer();
+  CustomVoiceClient.destroyDevice();
 });
 </script>
 
