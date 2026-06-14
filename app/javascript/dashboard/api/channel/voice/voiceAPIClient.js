@@ -95,6 +95,25 @@ class VoiceAPI extends ApiClient {
       .then(r => r.data);
   }
 
+  uploadRecording({
+    inboxId,
+    conversationId,
+    callSid,
+    blob,
+    filename = 'call-recording.webm',
+  }) {
+    const formData = new FormData();
+    formData.append('conversation_id', conversationId);
+    formData.append('call_sid', callSid);
+    formData.append('recording', blob, filename);
+    return axios
+      .post(
+        `${this.baseUrl()}/inboxes/${inboxId}/conference/upload_recording`,
+        formData
+      )
+      .then(r => r.data);
+  }
+
   transferCall({ inboxId, conversationId, targetAgentId, callSid }) {
     return axios
       .post(`${this.baseUrl()}/inboxes/${inboxId}/conference/transfer`, {

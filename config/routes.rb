@@ -268,6 +268,7 @@ Rails.application.routes.draw do
                 post :transfer, on: :member
                 post :incoming, on: :member
                 post :status, on: :member
+                post :upload_recording, on: :member
               end
               post :enable_whatsapp_calling, on: :member
               post :disable_whatsapp_calling, on: :member

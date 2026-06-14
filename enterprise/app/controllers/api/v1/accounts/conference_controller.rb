@@ -95,6 +95,22 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
     render json: { status: 'success', id: call.conversation.display_id }
   end
 
+  def upload_recording
+    unless provider == 'custom'
+      return render json: { error: 'Recording supported only for custom voice provider' }, status: :unprocessable_entity
+    end
+
+    call = resolve_call!
+    return render_could_not_create_error(I18n.t('errors.whatsapp.calls.no_recording')) if params[:recording].blank?
+    return render_could_not_create_error(I18n.t('errors.whatsapp.calls.no_message')) if call.message.blank?
+
+    upload_status = call.message.with_lock do
+      attach_recording_idempotently(call)
+    end
+
+    render json: { status: upload_status, id: call.conversation.display_id }
+  end
+
   def transfer
     return render json: { error: 'Transfer supported only for custom voice provider' }, status: :unprocessable_entity unless provider == 'custom'
 
@@ -154,6 +170,17 @@ class Api::V1::Accounts::ConferenceController < Api::V1::Accounts::BaseControlle
     raise ActiveRecord::RecordNotFound, 'Conversation not linked to voice inbox' unless internal_voice_inbox_id == @voice_inbox.id
 
     conversation
+  end
+
+  def attach_recording_idempotently(call)
+    return 'already_uploaded' if call.message.attachments.exists?(file_type: :audio)
+
+    call.message.attachments.create!(
+      account_id: call.account_id,
+      file_type: :audio,
+      file: params[:recording]
+    )
+    'uploaded'
   end
 
   def render_call_already_accepted(error)

@@ -11,6 +11,14 @@ const createAudioBlockedEvent = detail =>
 const createCallInviteFailedEvent = detail =>
   new CustomEvent('call:invite_failed', { detail });
 
+const RECORDING_TIMESLICE_MS = 1000;
+
+const RECORDER_MIME_CANDIDATES = [
+  'audio/webm;codecs=opus',
+  'audio/webm',
+  'audio/ogg;codecs=opus',
+];
+
 const AUDIO_PERMISSION_KEY = 'cw_voice_audio_playback_allowed';
 
 const getStoredAudioPermission = () => {
@@ -47,6 +55,11 @@ class CustomVoiceClient extends EventTarget {
     this.reconnectAttempt = 0;
     this.isReconnecting = false;
     this.isDestroying = false;
+    this.mediaRecorder = null;
+    this.recorderChunks = [];
+    this.audioContext = null;
+    this.recorderDestination = null;
+    this.recordedRemoteStream = null;
   }
 
   async initializeDevice(inboxId, { force = false, reason = 'manual' } = {}) {
@@ -231,6 +244,7 @@ class CustomVoiceClient extends EventTarget {
     console.log('[CustomVoiceClient] destroyDevice', { inboxId: this.inboxId });
     this.isDestroying = true;
     this.clearReconnectTimer();
+    this.cleanupRecorder();
     if (this.userAgent) {
       this.userAgent.stop();
     }
@@ -307,6 +321,7 @@ class CustomVoiceClient extends EventTarget {
       if (state === SessionState.Terminated) {
         this.activeSession = null;
         this.handleSessionTerminated(session);
+        this.stopRecorderAndUpload(session);
         this.dispatchEvent(
           createCallDisconnectedEvent({
             inboxId: session.__cwInboxId,
@@ -325,7 +340,10 @@ class CustomVoiceClient extends EventTarget {
             const track =
               receiver.track?.readyState === 'live' ? receiver.track : null;
             if (track && track.kind === 'audio') {
-              this.remoteAudio.srcObject = new MediaStream([track]);
+              const stream = new MediaStream([track]);
+              this.remoteAudio.srcObject = stream;
+              this.recordedRemoteStream = stream;
+              this.setupRecorder(session);
               this.requestRemoteAudioPlayback('remote-track-established').catch(
                 () => {}
               );
@@ -404,6 +422,117 @@ class CustomVoiceClient extends EventTarget {
     }
   }
 
+  setupRecorder(session) {
+    if (this.mediaRecorder) return;
+    if (!session.__cwWasEstablished) return;
+    const handler = session.sessionDescriptionHandler;
+    const peerConnection = handler?.peerConnection;
+    if (!peerConnection) return;
+    const localStream =
+      handler?.localMediaStream ||
+      new MediaStream(
+        peerConnection
+          .getSenders()
+          .map(sender => sender.track)
+          .filter(
+            track => track?.kind === 'audio' && track.readyState === 'live'
+          )
+      );
+    const remoteStream =
+      this.recordedRemoteStream || this.remoteAudio?.srcObject;
+    if (!localStream || !remoteStream) return;
+    if (remoteStream.getAudioTracks().length === 0) return;
+    if (typeof MediaRecorder === 'undefined') return;
+
+    const mimeType = RECORDER_MIME_CANDIDATES.find(type =>
+      MediaRecorder.isTypeSupported(type)
+    );
+    if (!mimeType) return;
+
+    try {
+      this.audioContext = new AudioContext({ sampleRate: 48000 });
+      this.audioContext.resume().catch(() => {});
+      this.recorderDestination =
+        this.audioContext.createMediaStreamDestination();
+      this.audioContext
+        .createMediaStreamSource(localStream)
+        .connect(this.recorderDestination);
+      this.audioContext
+        .createMediaStreamSource(remoteStream)
+        .connect(this.recorderDestination);
+      this.recorderChunks = [];
+      this.mediaRecorder = new MediaRecorder(this.recorderDestination.stream, {
+        mimeType,
+      });
+      this.mediaRecorder.ondataavailable = event => {
+        if (event.data && event.data.size > 0) {
+          this.recorderChunks.push(event.data);
+        }
+      };
+      this.mediaRecorder.start(RECORDING_TIMESLICE_MS);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('[CustomVoiceClient] recording start failed', {
+        inboxId: this.inboxId,
+        error,
+      });
+      this.cleanupRecorder();
+    }
+  }
+
+  async stopRecorderAndUpload(session) {
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      await new Promise(resolve => {
+        this.mediaRecorder.addEventListener('stop', resolve, { once: true });
+        try {
+          this.mediaRecorder.stop();
+        } catch (_) {
+          resolve();
+        }
+      });
+    }
+
+    const chunks = this.recorderChunks;
+    this.recorderChunks = [];
+    this.cleanupRecorder();
+    if (!chunks.length || !session.__cwWasEstablished) return;
+
+    const callSid = session.__cwCallSid;
+    const conversationId = session.__cwConversationId;
+    const inboxId = session.__cwInboxId || this.inboxId;
+    if (!callSid || !conversationId || !inboxId) return;
+
+    const blob = new Blob(chunks, { type: chunks[0].type });
+    try {
+      await VoiceAPI.uploadRecording({
+        inboxId,
+        conversationId,
+        callSid,
+        blob,
+      });
+    } catch (_) {
+      /* noop */
+    }
+  }
+
+  cleanupRecorder() {
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try {
+        this.mediaRecorder.stop();
+      } catch (_) {
+        /* noop */
+      }
+    }
+    if (this.audioContext && this.audioContext.state !== 'closed') {
+      this.audioContext.close().catch(() => {});
+    }
+    this.mediaRecorder = null;
+    this.audioContext = null;
+    this.recorderDestination = null;
+    this.recorderChunks = [];
+    this.recordedRemoteStream = null;
+  }
+
   attachRemoteStream(session) {
     const handler = session.sessionDescriptionHandler;
     if (!handler || !this.remoteAudio) return;
@@ -441,6 +570,8 @@ class CustomVoiceClient extends EventTarget {
       if (!stream) return;
       if (event.track && event.track.kind !== 'audio') return;
       this.remoteAudio.srcObject = stream;
+      this.recordedRemoteStream = stream;
+      this.setupRecorder(session);
       this.requestRemoteAudioPlayback('remote-track').catch(() => {});
       // eslint-disable-next-line no-console
       console.log('[CustomVoiceClient] remoteStream attached', {
