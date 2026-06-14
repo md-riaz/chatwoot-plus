@@ -24,7 +24,7 @@ import ContactAttachmentModal from 'dashboard/components-next/Conversation/Conta
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
 import AudioRecorder from 'dashboard/components/widgets/WootWriter/AudioRecorder.vue';
-import { AUDIO_FORMATS } from 'shared/constants/messages';
+import { getAudioRecordFormat } from 'dashboard/helper/audioRecordFormat';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { CMD_AI_ASSIST } from 'dashboard/helper/commandbar/events';
 import {
@@ -401,20 +401,13 @@ export default {
       return `draft-${this.conversationIdByRoute}-${this.replyType}`;
     },
     audioRecordFormat() {
-      if (this.isAWhatsAppCloudChannel) {
-        return AUDIO_FORMATS.OGG;
-      }
-      if (
-        this.isAWhatsAppChannel ||
-        this.isATelegramChannel ||
-        this.isANotificaMeChannel
-      ) {
-        return AUDIO_FORMATS.MP3;
-      }
-      if (this.isAPIInbox) {
-        return AUDIO_FORMATS.MP3;
-      }
-      return AUDIO_FORMATS.WAV;
+      return getAudioRecordFormat({
+        isAWhatsAppCloudChannel: this.isAWhatsAppCloudChannel,
+        isAWhatsAppChannel: this.isAWhatsAppChannel,
+        isATelegramChannel: this.isATelegramChannel,
+        isANotificaMeChannel: this.isANotificaMeChannel,
+        isAPIInbox: this.isAPIInbox,
+      });
     },
     messageVariables() {
       const variables = getMessageVariables({
