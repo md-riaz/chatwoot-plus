@@ -513,7 +513,8 @@
       "MACROS": "Macros",
       "LINEAR_ISSUES": "Linked Linear Issues",
       "SHOPIFY_ORDERS": "Shopify Orders",
-      "SHARED_FILES": "Attachments"
+      "SHARED_FILES": "Attachments",
+      "SCHEDULED_MESSAGES": "Scheduled Messages"
     },
     "SHARED_FILES": {
       "EMPTY": "No attachments yet",
@@ -610,5 +611,138 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"
+  },
+  "SCHEDULED_MESSAGES": {
+    "NEW_BUTTON": "New scheduled message",
+    "EMPTY_STATE": "No scheduled messages yet",
+    "PAST_MESSAGES_SECTION": "Past scheduled messages",
+    "META": {
+      "AUTHOR_YOU": "{name} (you)"
+    },
+    "STATUS": {
+      "DRAFT": "Draft",
+      "PENDING": "Pending",
+      "SENT": "Sent",
+      "FAILED": "Failed"
+    },
+    "ITEM": {
+      "TEMPLATE_PREVIEW": "Template: {name}",
+      "EMPTY_PREVIEW": "No message content",
+      "GO_TO_MESSAGE": "Go to message",
+      "NO_SCHEDULE": "Not scheduled",
+      "COLLAPSE": "Show less",
+      "EXPAND": "Show more",
+      "TEMPLATE_LABEL": "Template: {name}",
+      "ATTACHMENT_LABEL": "Attachment: {filename}"
+    },
+    "MODAL": {
+      "TITLE_NEW": "Schedule message",
+      "TITLE_EDIT": "Edit scheduled message",
+      "MESSAGE_LABEL": "Message",
+      "MESSAGE_PLACEHOLDER": "Type the message to send later",
+      "ATTACHMENT_ADD": "Add attachment",
+      "TEMPLATE_SELECT": "Use template",
+      "TEMPLATE_SELECTED": "Template selected: {name}",
+      "SCHEDULE_LABEL": "Schedule",
+      "CANCEL": "Cancel",
+      "SCHEDULE": "Schedule",
+      "SAVE_DRAFT": "Save draft",
+      "CUSTOM_INPUT_PLACEHOLDER": "Try “tomorrow at 9 AM”",
+      "DATEPICKER_TOOLTIP": "Pick date and time",
+      "PARSED_DATE_IN_PAST": "Choose a future time",
+      "CUSTOM_INPUT_HINT": "Could not understand that time",
+      "CUSTOM_INPUT_HINT_EXAMPLE": "Example: tomorrow at 9 AM",
+      "SHORTCUTS": {
+        "TOMORROW_MORNING": "Tomorrow morning",
+        "TOMORROW_AFTERNOON": "Tomorrow afternoon",
+        "MONDAY_MORNING": "Monday morning",
+        "CUSTOM": "Custom date and time"
+      },
+      "TEMPLATE_ACTION": "Use template"
+    },
+    "ERRORS": {
+      "DATETIME_REQUIRED": "Choose when to send this message.",
+      "SCHEDULE_IN_PAST": "Schedule time must be in the future.",
+      "SAVE_FAILED": "Could not save the scheduled message. Please try again.",
+      "CONTENT_REQUIRED": "Enter a message or choose a template.",
+      "CONTENT_TOO_LONG": "Message is too long. Maximum allowed is {maxLength} characters.",
+      "DELETE_FAILED": "Could not delete the scheduled message. Please try again."
+    },
+    "CONFIRM_CLOSE": {
+      "TITLE": "Discard changes?",
+      "MESSAGE": "You have unsaved changes in this scheduled message.",
+      "CONTINUE_EDITING": "Continue editing",
+      "DISCARD": "Discard"
+    },
+    "CONFIRM_DELETE": {
+      "TITLE": "Delete scheduled message?",
+      "MESSAGE": "This scheduled message will be deleted permanently.",
+      "CANCEL": "Cancel",
+      "DELETE": "Delete"
+    },
+    "RECURRENCE": {
+      "SECTION_TITLE": "Repeat",
+      "NO_REPEAT": "Does not repeat",
+      "DAILY": "Daily",
+      "WEEKLY": "Weekly on {day}",
+      "MONTHLY_NTH": "Monthly on the {nth} {day}",
+      "MONTHLY_LAST": "Monthly on the last {day}",
+      "YEARLY": "Yearly on {month} {dayNum}",
+      "WEEKDAYS": "Every weekday",
+      "CUSTOM": "Custom",
+      "STATUS_ACTIVE": "Active",
+      "STATUS_COMPLETED": "Completed",
+      "STATUS_CANCELLED": "Cancelled",
+      "NEXT_SEND": "Next send: {time}",
+      "OCCURRENCES_SENT": "{count} sent/failed occurrence(s)",
+      "RESOLVED_WARNING": "This conversation is resolved. Scheduled messages will send only if the conversation can still receive replies.",
+      "WEEKDAYS_SHORT": {
+        "SUN": "Sun",
+        "MON": "Mon",
+        "TUE": "Tue",
+        "WED": "Wed",
+        "THU": "Thu",
+        "FRI": "Fri",
+        "SAT": "Sat"
+      },
+      "DESCRIPTION": {
+        "DAILY_ONE": "Every day",
+        "DAILY_OTHER": "Every {count} days",
+        "WEEKLY_ONE": "Every week",
+        "WEEKLY_OTHER": "Every {count} weeks",
+        "WEEKLY_ON": "{prefix} on {days}",
+        "MONTHLY_ONE": "Every month",
+        "MONTHLY_OTHER": "Every {count} months",
+        "MONTHLY_ON_WEEKDAY": "{prefix} on the {ordinal} {weekday}",
+        "YEARLY_ONE": "Every year",
+        "YEARLY_OTHER": "Every {count} years",
+        "UNTIL_DATE": "until {date}",
+        "AFTER_COUNT": "ends after {count} occurrence(s)"
+      },
+      "CUSTOM_MODAL": {
+        "TITLE": "Custom recurrence",
+        "REPEAT_EVERY": "Repeat every",
+        "FREQ_DAILY": "day(s)",
+        "FREQ_WEEKLY": "week(s)",
+        "FREQ_MONTHLY": "month(s)",
+        "FREQ_YEARLY": "year(s)",
+        "REPEAT_ON": "Repeat on",
+        "MONTHLY_ON_DAY": "Monthly on this day of the month",
+        "MONTHLY_ON_WEEKDAY": "Monthly on this weekday",
+        "ENDS": "Ends",
+        "ENDS_NEVER": "Never",
+        "ENDS_ON_DATE": "On date",
+        "ENDS_AFTER": "After",
+        "ENDS_OCCURRENCES": "occurrences",
+        "CANCEL": "Cancel",
+        "DONE": "Done"
+      },
+      "STOP_CONFIRM": {
+        "TITLE": "Stop recurring message?",
+        "MESSAGE": "Future scheduled occurrences will be cancelled.",
+        "CANCEL": "Cancel",
+        "CONFIRM": "Stop"
+      }
+    }
   }
 }
