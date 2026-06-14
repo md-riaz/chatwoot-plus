@@ -21,6 +21,7 @@ import ChannelIcon from 'next/icon/ChannelIcon.vue';
 import SidebarAccountSwitcher from './SidebarAccountSwitcher.vue';
 import Logo from 'next/icon/Logo.vue';
 import ComposeConversation from 'dashboard/components-next/NewConversation/ComposeConversation.vue';
+import ComposeInternalChat from 'dashboard/components-next/InternalChat/ComposeInternalChat.vue';
 
 const props = defineProps({
   isMobileSidebarOpen: {
@@ -254,6 +255,10 @@ const sortedInboxes = computed(() =>
     inbox => inbox.name,
     inbox => getInboxUnreadCount.value(inbox.id)
   )
+);
+
+const hasInternalInboxes = computed(() =>
+  inboxes.value.some(inbox => inbox.channel_type === 'Channel::Internal')
 );
 
 const sortedLabels = computed(() =>
@@ -942,6 +947,24 @@ const menuItems = computed(() => {
             />
           </template>
         </ComposeConversation>
+        <ComposeInternalChat v-if="hasInternalInboxes" align-position="start">
+          <template #trigger="{ isOpen, toggle }">
+            <Button
+              icon="i-ri-chat-1-line"
+              color="slate"
+              size="sm"
+              class="dark:hover:!bg-n-slate-9/30"
+              :title="t('CONVERSATION.INTERNAL_CHAT.TITLE')"
+              :class="[
+                isEffectivelyCollapsed
+                  ? '!size-8 !outline-n-weak !text-n-slate-11'
+                  : '!h-7 !outline-n-weak !text-n-slate-11',
+                { '!bg-n-alpha-2 dark:!bg-n-slate-9/30': isOpen },
+              ]"
+              @click="toggle"
+            />
+          </template>
+        </ComposeInternalChat>
       </div>
     </section>
     <nav
