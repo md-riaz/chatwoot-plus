@@ -30,6 +30,7 @@ class Channel::Voice < ApplicationRecord
 
   # Provider-specific configs stored in JSON
   validate :validate_provider_config
+  before_validation :normalize_custom_provider_config, if: :custom?
   before_validation :provision_twilio_on_create, on: :create, if: :twilio?
 
   EDITABLE_ATTRS = [:phone_number, :provider, { provider_config: {} }].freeze
@@ -46,6 +47,12 @@ class Channel::Voice < ApplicationRecord
     case provider
     when 'twilio'
       Voice::Provider::Twilio::Adapter.new(self).initiate_call(
+        to: to,
+        conference_sid: conference_sid,
+        agent_id: agent_id
+      )
+    when 'custom'
+      Voice::Provider::Custom::Adapter.new(channel: self).initiate_call(
         to: to,
         conference_sid: conference_sid,
         agent_id: agent_id
@@ -72,12 +79,29 @@ class Channel::Voice < ApplicationRecord
     provider == 'twilio'
   end
 
+  def custom?
+    provider == 'custom'
+  end
+
+  def normalize_custom_provider_config
+    return if provider_config.blank?
+
+    cfg = provider_config_hash.with_indifferent_access
+    ws_url = cfg[:webrtc_ws_url].to_s.strip
+    return if ws_url.blank?
+
+    cfg[:webrtc_ws_url] = ws_url.end_with?('/') ? ws_url : "#{ws_url}/"
+    self.provider_config = cfg
+  end
+
   def validate_provider_config
     return if provider_config.blank?
 
     case provider
     when 'twilio'
       validate_twilio_config
+    when 'custom'
+      validate_custom_config
     end
   end
 
@@ -90,13 +114,32 @@ class Channel::Voice < ApplicationRecord
     end
   end
 
+  def validate_custom_config
+    config = provider_config_hash.with_indifferent_access
+    required_keys = %w[webrtc_ws_url sip_domain]
+    required_keys.each do |key|
+      errors.add(:provider_config, "#{key} is required for custom provider") if config[key].blank?
+    end
+
+    auth_type = config['auth_type'].presence || 'jwt'
+    errors.add(:provider_config, 'auth_type is invalid for custom provider') unless %w[jwt password].include?(auth_type)
+
+    if config['transfer_mode'].to_s == 'ari' && config['transfer_api_url'].blank?
+      errors.add(:provider_config, 'transfer_api_url is required for custom provider')
+    end
+  end
+
   def provider_config_hash
     if provider_config.is_a?(Hash)
       provider_config
     else
       JSON.parse(provider_config.to_s)
     end
+  rescue JSON::ParserError, TypeError
+    errors.add(:provider_config, 'must be valid JSON')
+    {}
   end
+
 
   def provision_twilio_on_create
     service = ::Twilio::VoiceWebhookSetupService.new(channel: self)

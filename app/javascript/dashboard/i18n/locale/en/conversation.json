@@ -139,11 +139,21 @@
       "OUTGOING_CALL": "Outgoing call",
       "CALL_IN_PROGRESS": "Call in progress",
       "NO_ANSWER": "No answer",
+      "NO_ANSWER_OUTBOUND_LABEL": "No answer",
+      "NO_ANSWER_OUTBOUND_SUBTEXT": "The contact did not answer",
       "MISSED_CALL": "Missed call",
+      "MISSED_CALL_INBOUND_SUBTEXT": "No agent answered",
+      "MISSED_CALL_DECLINED_BY": "Declined by {agentName}",
       "CALL_ENDED": "Call ended",
+      "HANDLED_BY": "Handled by {agentName}",
       "NOT_ANSWERED_YET": "Not answered yet",
+      "CALLING": "Calling…",
       "THEY_ANSWERED": "They answered",
-      "YOU_ANSWERED": "You answered"
+      "YOU_ANSWERED": "You answered",
+      "JOIN_CALL": "Join call",
+      "CALL_BACK": "Call back",
+      "TRANSCRIPT_SHOW_MORE": "Show more",
+      "TRANSCRIPT_SHOW_LESS": "Show less"
     },
     "HEADER": {
       "RESOLVE_ACTION": "Resolve",
@@ -376,8 +386,67 @@
       "NOT_ANSWERED_YET": "Not answered yet",
       "HANDLED_IN_ANOTHER_TAB": "Being handled in another tab",
       "REJECT_CALL": "Reject",
+      "DISMISS_CALL": "Dismiss",
       "JOIN_CALL": "Join call",
-      "END_CALL": "End call"
+      "END_CALL": "End call",
+      "MUTE": "Mute microphone",
+      "UNMUTE": "Unmute microphone",
+      "VIEW_CHAT_HISTORY": "View conversation history",
+      "GO_TO_CONVERSATION": "Go to conversation",
+      "CONNECTED": "Voice connected.",
+      "DIALER_TITLE": "Dialer",
+      "DIALER_MOVE": "Reset position",
+      "DIALER_HIDE": "Hide",
+      "DIALER_NUMBER_LABEL": "Phone number",
+      "DIALER_NUMBER_PLACEHOLDER": "Enter phone number",
+      "DIALER_BACKSPACE": "Backspace",
+      "DIALER_CLEAR": "Clear",
+      "DIALER_CANCEL": "Cancel",
+      "DIALER_CALL": "Call",
+      "DIALER_EMPTY_NUMBER": "Enter phone number.",
+      "DIALER_PICK_INBOX": "Select voice inbox.",
+      "DIALER_SELECT_INBOX_PLACEHOLDER": "Select an inbox",
+      "DIALER_INVALID_NUMBER": "Enter valid phone number.",
+      "DIALER_FAILED": "Call could not start. Try again.",
+      "DIALPAD_TITLE": "Dialpad",
+      "DIALPAD_CLEAR": "Clear",
+      "DIALPAD_CLOSE": "Close",
+      "TRANSFER_TITLE": "Transfer call",
+      "TRANSFER_SEARCH_PLACEHOLDER": "Search agents",
+      "TRANSFER_CANCEL": "Cancel",
+      "TRANSFER_CONFIRM": "Transfer",
+      "TRANSFER_SUCCESS": "Call transfer started.",
+      "TRANSFER_ERROR": "Could not transfer call.",
+      "INTERNAL_CALL_BUTTON": "Internal call",
+      "INTERNAL_CALL_TITLE": "Start internal call",
+      "INTERNAL_CALL_PICK_AGENT": "Select agent",
+      "INTERNAL_CALL_PICK_INBOX": "Select voice inbox",
+      "INTERNAL_CALL_PICK_INTERNAL_INBOX": "Select internal chat inbox",
+      "INTERNAL_CALL_START": "Start call",
+      "INTERNAL_CALL_INITIATED": "Internal call started.",
+      "INTERNAL_CALL_FAILED": "Could not start internal call."
+    },
+    "INTERNAL_CHAT": {
+      "TITLE": "Internal chat",
+      "DESCRIPTION": "Start a private text conversation with other agents.",
+      "NO_INBOX": "No internal chat inbox is available for your account.",
+      "INBOX_LABEL": "Internal inbox",
+      "INBOX_PLACEHOLDER": "Select an internal inbox",
+      "TITLE_LABEL": "Conversation title",
+      "OPTIONAL": "optional",
+      "TITLE_PLACEHOLDER": "Add a title for this internal chat",
+      "PARTICIPANTS_LABEL": "Participants",
+      "NO_PARTICIPANT_SELECTED": "No participants selected yet.",
+      "ADD_PARTICIPANTS": "Add participants",
+      "ADD_ME": "Add me",
+      "SEARCH_PARTICIPANTS": "Search agents...",
+      "MESSAGE_LABEL": "Message",
+      "MESSAGE_PLACEHOLDER": "Write your internal message",
+      "CANCEL": "Cancel",
+      "SUBMIT": "Start internal chat",
+      "SUCCESS": "Internal chat created successfully.",
+      "GO_TO_CONVERSATION": "Open conversation",
+      "ERROR": "Could not create the internal chat."
     }
   },
   "EMAIL_TRANSCRIPT": {
@@ -444,7 +513,8 @@
       "MACROS": "Macros",
       "LINEAR_ISSUES": "Linked Linear Issues",
       "SHOPIFY_ORDERS": "Shopify Orders",
-      "SHARED_FILES": "Attachments"
+      "SHARED_FILES": "Attachments",
+      "SCHEDULED_MESSAGES": "Scheduled Messages"
     },
     "SHARED_FILES": {
       "EMPTY": "No attachments yet",
@@ -541,5 +611,138 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"
+  },
+  "SCHEDULED_MESSAGES": {
+    "NEW_BUTTON": "New scheduled message",
+    "EMPTY_STATE": "No scheduled messages yet",
+    "PAST_MESSAGES_SECTION": "Past scheduled messages",
+    "META": {
+      "AUTHOR_YOU": "{name} (you)"
+    },
+    "STATUS": {
+      "DRAFT": "Draft",
+      "PENDING": "Pending",
+      "SENT": "Sent",
+      "FAILED": "Failed"
+    },
+    "ITEM": {
+      "TEMPLATE_PREVIEW": "Template: {name}",
+      "EMPTY_PREVIEW": "No message content",
+      "GO_TO_MESSAGE": "Go to message",
+      "NO_SCHEDULE": "Not scheduled",
+      "COLLAPSE": "Show less",
+      "EXPAND": "Show more",
+      "TEMPLATE_LABEL": "Template: {name}",
+      "ATTACHMENT_LABEL": "Attachment: {filename}"
+    },
+    "MODAL": {
+      "TITLE_NEW": "Schedule message",
+      "TITLE_EDIT": "Edit scheduled message",
+      "MESSAGE_LABEL": "Message",
+      "MESSAGE_PLACEHOLDER": "Type the message to send later",
+      "ATTACHMENT_ADD": "Add attachment",
+      "TEMPLATE_SELECT": "Use template",
+      "TEMPLATE_SELECTED": "Template selected: {name}",
+      "SCHEDULE_LABEL": "Schedule",
+      "CANCEL": "Cancel",
+      "SCHEDULE": "Schedule",
+      "SAVE_DRAFT": "Save draft",
+      "CUSTOM_INPUT_PLACEHOLDER": "Try “tomorrow at 9 AM”",
+      "DATEPICKER_TOOLTIP": "Pick date and time",
+      "PARSED_DATE_IN_PAST": "Choose a future time",
+      "CUSTOM_INPUT_HINT": "Could not understand that time",
+      "CUSTOM_INPUT_HINT_EXAMPLE": "Example: tomorrow at 9 AM",
+      "SHORTCUTS": {
+        "TOMORROW_MORNING": "Tomorrow morning",
+        "TOMORROW_AFTERNOON": "Tomorrow afternoon",
+        "MONDAY_MORNING": "Monday morning",
+        "CUSTOM": "Custom date and time"
+      },
+      "TEMPLATE_ACTION": "Use template"
+    },
+    "ERRORS": {
+      "DATETIME_REQUIRED": "Choose when to send this message.",
+      "SCHEDULE_IN_PAST": "Schedule time must be in the future.",
+      "SAVE_FAILED": "Could not save the scheduled message. Please try again.",
+      "CONTENT_REQUIRED": "Enter a message or choose a template.",
+      "CONTENT_TOO_LONG": "Message is too long. Maximum allowed is {maxLength} characters.",
+      "DELETE_FAILED": "Could not delete the scheduled message. Please try again."
+    },
+    "CONFIRM_CLOSE": {
+      "TITLE": "Discard changes?",
+      "MESSAGE": "You have unsaved changes in this scheduled message.",
+      "CONTINUE_EDITING": "Continue editing",
+      "DISCARD": "Discard"
+    },
+    "CONFIRM_DELETE": {
+      "TITLE": "Delete scheduled message?",
+      "MESSAGE": "This scheduled message will be deleted permanently.",
+      "CANCEL": "Cancel",
+      "DELETE": "Delete"
+    },
+    "RECURRENCE": {
+      "SECTION_TITLE": "Repeat",
+      "NO_REPEAT": "Does not repeat",
+      "DAILY": "Daily",
+      "WEEKLY": "Weekly on {day}",
+      "MONTHLY_NTH": "Monthly on the {nth} {day}",
+      "MONTHLY_LAST": "Monthly on the last {day}",
+      "YEARLY": "Yearly on {month} {dayNum}",
+      "WEEKDAYS": "Every weekday",
+      "CUSTOM": "Custom",
+      "STATUS_ACTIVE": "Active",
+      "STATUS_COMPLETED": "Completed",
+      "STATUS_CANCELLED": "Cancelled",
+      "NEXT_SEND": "Next send: {time}",
+      "OCCURRENCES_SENT": "{count} sent/failed occurrence(s)",
+      "RESOLVED_WARNING": "This conversation is resolved. Scheduled messages will send only if the conversation can still receive replies.",
+      "WEEKDAYS_SHORT": {
+        "SUN": "Sun",
+        "MON": "Mon",
+        "TUE": "Tue",
+        "WED": "Wed",
+        "THU": "Thu",
+        "FRI": "Fri",
+        "SAT": "Sat"
+      },
+      "DESCRIPTION": {
+        "DAILY_ONE": "Every day",
+        "DAILY_OTHER": "Every {count} days",
+        "WEEKLY_ONE": "Every week",
+        "WEEKLY_OTHER": "Every {count} weeks",
+        "WEEKLY_ON": "{prefix} on {days}",
+        "MONTHLY_ONE": "Every month",
+        "MONTHLY_OTHER": "Every {count} months",
+        "MONTHLY_ON_WEEKDAY": "{prefix} on the {ordinal} {weekday}",
+        "YEARLY_ONE": "Every year",
+        "YEARLY_OTHER": "Every {count} years",
+        "UNTIL_DATE": "until {date}",
+        "AFTER_COUNT": "ends after {count} occurrence(s)"
+      },
+      "CUSTOM_MODAL": {
+        "TITLE": "Custom recurrence",
+        "REPEAT_EVERY": "Repeat every",
+        "FREQ_DAILY": "day(s)",
+        "FREQ_WEEKLY": "week(s)",
+        "FREQ_MONTHLY": "month(s)",
+        "FREQ_YEARLY": "year(s)",
+        "REPEAT_ON": "Repeat on",
+        "MONTHLY_ON_DAY": "Monthly on this day of the month",
+        "MONTHLY_ON_WEEKDAY": "Monthly on this weekday",
+        "ENDS": "Ends",
+        "ENDS_NEVER": "Never",
+        "ENDS_ON_DATE": "On date",
+        "ENDS_AFTER": "After",
+        "ENDS_OCCURRENCES": "occurrences",
+        "CANCEL": "Cancel",
+        "DONE": "Done"
+      },
+      "STOP_CONFIRM": {
+        "TITLE": "Stop recurring message?",
+        "MESSAGE": "Future scheduled occurrences will be cancelled.",
+        "CANCEL": "Cancel",
+        "CONFIRM": "Stop"
+      }
+    }
   }
 }

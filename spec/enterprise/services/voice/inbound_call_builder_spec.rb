@@ -100,6 +100,31 @@ RSpec.describe Voice::InboundCallBuilder do
     end
   end
 
+  context 'when a custom SIP inbound call comes from an internal extension' do
+    let(:channel) { create(:channel_voice, account: account, provider: 'custom') }
+    let(:from_number) { '102' }
+    let(:call_sid) { '193e9e9a-de7b-123f-70a7-ba670188bf72' }
+
+    it 'creates the caller contact without using the extension as phone_number' do
+      call = described_class.perform!(
+        inbox: inbox,
+        from_number: from_number,
+        call_sid: call_sid,
+        provider: :custom
+      )
+
+      aggregate_failures do
+        expect(call.contact.phone_number).to be_nil
+        expect(call.contact.identifier).to eq("voice:#{inbox.id}:102")
+        expect(call.contact.name).to eq('102')
+        expect(call.conversation.contact_inbox.source_id).to eq('102')
+        expect(call.from_number).to eq('102')
+        expect(call.provider_call_id).to eq(call_sid)
+        expect(call.provider).to eq('custom')
+      end
+    end
+  end
+
   context 'when the WhatsApp wa_id needs Brazil normalization to match an existing ContactInbox' do
     let(:whatsapp_channel) do
       create(:channel_whatsapp, account: account, provider: 'whatsapp_cloud',
@@ -136,10 +161,19 @@ RSpec.describe Voice::InboundCallBuilder do
 
     before { inbox.update!(lock_to_single_conversation: true) }
 
-    it 'reuses the most recent non-resolved conversation' do
+    it 'reuses the latest conversation' do
       call = nil
       expect { call = perform_builder }.not_to change(account.conversations, :count)
       expect(call.conversation).to eq(existing_open_conversation)
+    end
+
+    it 'reopens a resolved conversation before adding the call message' do
+      existing_open_conversation.update!(status: :resolved)
+
+      call = perform_builder
+
+      expect(call.conversation).to eq(existing_open_conversation)
+      expect(existing_open_conversation.reload).to be_open
     end
 
     it 'still creates a new Call and voice_call message on the reused conversation' do

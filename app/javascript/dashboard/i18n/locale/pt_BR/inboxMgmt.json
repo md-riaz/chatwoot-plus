@@ -287,6 +287,30 @@
           "ERROR": "Por favor, insira um valor válido.",
           "REPLACE_CONFIRM": "Já existe um token. Deseja substituí-lo?"
         },
+        "URL": {
+          "LABEL": "URL da UnoAPI",
+          "PLACEHOLDER": "https://unoapi.cloud",
+          "ERROR": "Por favor, insira uma URL válida."
+        },
+        "SEND_AGENT_NAME": {
+          "LABEL": "Enviar nome do agente",
+          "ERROR": "Por favor, escolha se o nome do agente deve ser enviado."
+        },
+        "IGNORE_GROUPS": {
+          "LABEL": "Ignorar mensagens de grupos",
+          "ERROR": "Por favor, escolha se as mensagens de grupos devem ser ignoradas."
+        },
+        "IGNORE_HISTORY": {
+          "LABEL": "Ignorar histórico de mensagens",
+          "ERROR": "Por favor, escolha se o histórico de mensagens deve ser ignorado."
+        },
+        "WEBHOOK_SEND_NEW_MESSAGES": {
+          "LABEL": "Enviar novas mensagens ao webhook",
+          "ERROR": "Por favor, escolha se novas mensagens devem ser enviadas ao webhook."
+        },
+        "GENERATE_API_KEY": {
+          "LABEL": "Gerar chave da API"
+        },
         "API_CALLBACK": {
           "TITLE": "URL de callback",
           "SUBTITLE": "Você deve configurar a URL do webhook e o token de verificação no portal do desenvolvedor do Facebook com os valores mostrados abaixo.",
@@ -330,7 +354,7 @@
       },
       "VOICE": {
         "TITLE": "Canal de Voz",
-        "DESC": "Integre o Twilio Voice e comece a oferecer suporte a seus clientes através de chamadas telefônicas.",
+        "DESC": "Integre Twilio ou voz SIP/WebRTC customizada e comece a oferecer suporte aos seus clientes por chamadas telefônicas.",
         "PHONE_NUMBER": {
           "LABEL": "Número de Telefone",
           "PLACEHOLDER": "Digite seu número de telefone (por exemplo, +551234567890)",
@@ -367,6 +391,82 @@
         "SUBMIT_BUTTON": "Criar Canal de Voz",
         "API": {
           "ERROR_MESSAGE": "Não conseguimos criar o canal de voz"
+        },
+        "PROVIDERS": {
+          "LABEL": "Provedor de voz",
+          "TWILIO": "Twilio",
+          "CUSTOM": "SIP/WebRTC customizado"
+        },
+        "CUSTOM": {
+          "WEBRTC_WS_URL": {
+            "LABEL": "URL WS do WebRTC",
+            "PLACEHOLDER": "wss://pbx.exemplo.com/ws",
+            "REQUIRED": "Este campo é obrigatório"
+          },
+          "SIP_DOMAIN": {
+            "LABEL": "Domínio SIP",
+            "PLACEHOLDER": "pbx.exemplo.com",
+            "REQUIRED": "Este campo é obrigatório"
+          },
+          "SIP_OUTBOUND_PROXY": {
+            "LABEL": "Proxy SIP de saída (opcional)",
+            "PLACEHOLDER": "sip:proxy.exemplo.com;transport=wss"
+          },
+          "SIP_TRANSPORT": {
+            "LABEL": "Transporte SIP",
+            "WSS": "WebSocket seguro (WSS)",
+            "WS": "WebSocket (WS)"
+          },
+          "AUTH_TYPE": {
+            "LABEL": "Tipo de autenticação",
+            "JWT": "JWT",
+            "PASSWORD": "Usuário e senha"
+          },
+          "TRANSFER_MODE": {
+            "LABEL": "Modo de transferência",
+            "SIP_REFER": "SIP REFER",
+            "ARI": "ARI / requisição de API"
+          },
+          "TRANSFER_API_URL": {
+            "LABEL": "URL da API de transferência",
+            "PLACEHOLDER": "https://pbx.exemplo.com/api/transfer",
+            "REQUIRED": "Este campo é obrigatório quando o modo ARI está selecionado"
+          },
+          "TRANSFER_API_TOKEN": {
+            "LABEL": "Token da API de transferência",
+            "PLACEHOLDER": "Token bearer opcional"
+          },
+          "USE_AGENT_JWT": "Gerar JWT a partir do perfil do usuário no Chatwoot",
+          "JWT_ISSUER": {
+            "LABEL": "Emissor do JWT",
+            "PLACEHOLDER": "pbx.exemplo.com"
+          },
+          "JWT_AUDIENCE": {
+            "LABEL": "Audiência do JWT",
+            "PLACEHOLDER": "clientes-webrtc"
+          },
+          "JWT_SECRET": {
+            "LABEL": "Segredo do JWT",
+            "PLACEHOLDER": "Informe o segredo de assinatura do JWT",
+            "REQUIRED": "Este campo é obrigatório"
+          },
+          "JWT_TTL": {
+            "LABEL": "TTL do JWT (segundos)",
+            "PLACEHOLDER": "3600"
+          }
+        },
+        "INTERNAL_CHANNEL": {
+          "TITLE": "Chat Interno",
+          "DESC": "Crie uma caixa de entrada para chat interno entre agentes.",
+          "CHANNEL_NAME": {
+            "LABEL": "Nome da Caixa de Entrada",
+            "PLACEHOLDER": "Digite o nome da caixa de entrada interna",
+            "ERROR": "Este campo é obrigatório"
+          },
+          "SUBMIT_BUTTON": "Criar Caixa de Entrada de Chat Interno",
+          "API": {
+            "ERROR_MESSAGE": "Não foi possível criar a caixa de entrada de chat interno"
+          }
         }
       },
       "API_CHANNEL": {
@@ -502,9 +602,13 @@
             "TITLE": "TikTok",
             "DESCRIPTION": "Conecte sua conta do TikTok"
           },
+          "INTERNAL": {
+            "TITLE": "Chat Interno",
+            "DESCRIPTION": "Crie uma caixa de entrada para conversas de texto entre agentes"
+          },
           "VOICE": {
             "TITLE": "Voz",
-            "DESCRIPTION": "Integre com o Twilio Voice"
+            "DESCRIPTION": "Integre com Twilio ou voz SIP/WebRTC customizada"
           }
         }
       },

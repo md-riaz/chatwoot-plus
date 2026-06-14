@@ -173,12 +173,14 @@ export default {
     <div class="w-[65%] flex-shrink-0 flex-grow-0 max-w-[65%] config-helptext">
       <label
         :class="{ error: v$.sendAgentName.$error }"
-        class="unoapi-switch-label"
+        for="sendAgentName"
+        class="unoapi-checkbox-label"
       >
-        <woot-switch
+        <input
+          id="sendAgentName"
           v-model="sendAgentName"
-          :value="sendAgentName"
-          class="unoapi-switch"
+          type="checkbox"
+          class="checkbox"
         />
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.SEND_AGENT_NAME.LABEL') }}
         <span v-if="v$.sendAgentName.$error" class="message">
@@ -190,12 +192,14 @@ export default {
     <div class="w-[65%] flex-shrink-0 flex-grow-0 max-w-[65%] config-helptext">
       <label
         :class="{ error: v$.ignoreGroupMessages.$error }"
-        class="unoapi-switch-label"
+        for="ignoreGroupMessages"
+        class="unoapi-checkbox-label"
       >
-        <woot-switch
+        <input
+          id="ignoreGroupMessages"
           v-model="ignoreGroupMessages"
-          :value="ignoreGroupMessages"
-          class="unoapi-switch"
+          type="checkbox"
+          class="checkbox"
         />
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.IGNORE_GROUPS.LABEL') }}
         <span v-if="v$.ignoreGroupMessages.$error" class="message">
@@ -207,12 +211,14 @@ export default {
     <div class="w-[65%] flex-shrink-0 flex-grow-0 max-w-[65%] config-helptext">
       <label
         :class="{ error: v$.ignoreHistoryMessages.$error }"
-        class="unoapi-switch-label"
+        for="ignoreHistoryMessages"
+        class="unoapi-checkbox-label"
       >
-        <woot-switch
+        <input
+          id="ignoreHistoryMessages"
           v-model="ignoreHistoryMessages"
-          :value="ignoreHistoryMessages"
-          class="unoapi-switch"
+          type="checkbox"
+          class="checkbox"
         />
         {{ $t('INBOX_MGMT.ADD.WHATSAPP.IGNORE_HISTORY.LABEL') }}
         <span v-if="v$.ignoreHistoryMessages.$error" class="message">
@@ -224,16 +230,18 @@ export default {
     <div class="w-[65%] flex-shrink-0 flex-grow-0 max-w-[65%] config-helptext">
       <label
         :class="{ error: v$.webhookSendNewMessages.$error }"
-        class="unoapi-switch-label"
+        for="webhookSendNewMessages"
+        class="unoapi-checkbox-label"
       >
-        <woot-switch
+        <input
+          id="webhookSendNewMessages"
           v-model="webhookSendNewMessages"
-          :value="webhookSendNewMessages"
-          class="unoapi-switch"
+          type="checkbox"
+          class="checkbox"
         />
-        {{ $t('INBOX_MGMT.ADD.WHATSAPP.WEBWOOK_SEND_NEW_MESSAGES.LABEL') }}
+        {{ $t('INBOX_MGMT.ADD.WHATSAPP.WEBHOOK_SEND_NEW_MESSAGES.LABEL') }}
         <span v-if="v$.webhookSendNewMessages.$error" class="message">
-          {{ $t('INBOX_MGMT.ADD.WHATSAPP.WEBWOOK_SEND_NEW_MESSAGES.ERROR') }}
+          {{ $t('INBOX_MGMT.ADD.WHATSAPP.WEBHOOK_SEND_NEW_MESSAGES.ERROR') }}
         </span>
       </label>
     </div>
@@ -253,13 +261,9 @@ export default {
 </template>
 
 <style lang="scss" scoped>
-.unoapi-switch {
-  flex: 0 0 auto;
-  margin-right: 10px;
-}
-
-.unoapi-switch-label {
+.unoapi-checkbox-label {
   display: flex;
   align-items: center;
+  gap: var(--space-smaller);
 }
 </style>

@@ -24,7 +24,13 @@ module Enterprise::Account
 
   # Auto-sync advanced_assignment with assignment_v2 when features are bulk-updated via admin UI
   def selected_feature_flags=(features)
-    super
+    selected_feature_names = Array(features).map { |flag| flag.to_s.delete_prefix('feature_') }
+    bitmask_feature_flags = Featurable::BITMASK_FEATURE_LIST.pluck('name').select { |name| selected_feature_names.include?(name) }
+
+    super(bitmask_feature_flags.map { |name| "feature_#{name}" })
+    Featurable::OVERFLOW_FEATURE_NAMES.each do |name|
+      send("feature_#{name}=", selected_feature_names.include?(name))
+    end
     sync_assignment_features
   end
 

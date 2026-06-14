@@ -8,13 +8,25 @@ module Featurable
 
   FEATURE_LIST = YAML.safe_load(Rails.root.join('config/features.yml').read).freeze
 
-  FEATURES = FEATURE_LIST.each_with_object({}) do |feature, result|
+  BITMASK_FEATURE_LIMIT = 63
+  BITMASK_FEATURE_LIST = FEATURE_LIST.first(BITMASK_FEATURE_LIMIT).freeze
+  OVERFLOW_FEATURE_NAMES = FEATURE_LIST.drop(BITMASK_FEATURE_LIMIT).pluck('name').freeze
+
+  FEATURES = BITMASK_FEATURE_LIST.each_with_object({}) do |feature, result|
     result[result.keys.size + 1] = "feature_#{feature['name']}".to_sym
   end
 
   included do
     include FlagShihTzu
     has_flags FEATURES.merge(column: 'feature_flags').merge(QUERY_MODE)
+
+    OVERFLOW_FEATURE_NAMES.each do |feature_name|
+      define_method("feature_#{feature_name}") { overflow_feature_enabled?(feature_name) }
+      define_method("feature_#{feature_name}?") { overflow_feature_enabled?(feature_name) }
+      define_method("feature_#{feature_name}=") do |value|
+        set_overflow_feature(feature_name, FlagShihTzu::TRUE_VALUES.include?(value))
+      end
+    end
 
     before_create :enable_default_features
   end
@@ -57,6 +69,24 @@ module Featurable
 
   def disabled_features
     all_features.select { |_feature, enabled| enabled == false }
+  end
+
+  def overflow_feature_flags
+    settings&.fetch('overflow_feature_flags', {}) || {}
+  end
+
+  def overflow_feature_enabled?(name)
+    feature_name = name.to_s
+    return overflow_feature_flags[feature_name] if overflow_feature_flags.key?(feature_name)
+
+    FEATURE_LIST.find { |feature| feature['name'] == feature_name }&.fetch('enabled', false) == true
+  end
+
+  def set_overflow_feature(name, value)
+    self.settings ||= {}
+    self.settings = settings.merge(
+      'overflow_feature_flags' => overflow_feature_flags.merge(name.to_s => value)
+    )
   end
 
   private

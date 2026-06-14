@@ -59,11 +59,30 @@ class Voice::InboundCallBuilder
   end
 
   def ensure_contact!
+    return ensure_extension_contact! if custom_extension_caller?
+
     contact = account.contacts.find_or_create_by!(phone_number: from_number) do |record|
       record.name = contact_name.presence || from_number
     end
     contact.update!(name: contact_name) if contact_name.present? && contact.name == from_number
     contact
+  end
+
+  def ensure_extension_contact!
+    identifier = "voice:#{inbox.id}:#{from_number}"
+    contact = account.contacts.find_or_create_by!(identifier: identifier) do |record|
+      record.name = contact_name.presence || from_number
+    end
+    contact.update!(name: contact_name) if contact_name.present? && contact.name == from_number
+    contact
+  end
+
+  def custom_extension_caller?
+    provider == :custom && !e164_number?(from_number)
+  end
+
+  def e164_number?(value)
+    value.to_s.match?(/\A\+[1-9]\d{1,14}\z/)
   end
 
   # WhatsApp inbound calls carry the caller's profile name in extra_meta; Twilio
@@ -84,13 +103,16 @@ class Voice::InboundCallBuilder
 
   # Mirror incoming-message routing: reuse the open conversation (or the last one when locked), else create new.
   def resolve_conversation!(contact, contact_inbox)
-    reusable = if inbox.lock_to_single_conversation
-                 contact_inbox.conversations.last
+    reusable = if inbox.lock_to_single_conversation?
+                 contact_inbox.conversations.order(created_at: :desc).first
                else
-                 contact_inbox.conversations.where.not(status: :resolved).last
+                 contact_inbox.conversations.where.not(status: :resolved).order(created_at: :desc).first
                end
-    return reusable if reusable
 
+    if reusable
+      reusable.open! if inbox.lock_to_single_conversation? && !reusable.open?
+      return reusable
+    end
     account.conversations.create!(
       contact_inbox_id: contact_inbox.id,
       inbox_id: inbox.id,
@@ -109,7 +131,7 @@ class Voice::InboundCallBuilder
       direction: :incoming,
       status: 'ringing',
       provider_call_id: call_sid,
-      meta: { 'initiated_at' => Time.zone.now.to_i }.merge(extra_meta.stringify_keys)
+      meta: { 'initiated_at' => Time.zone.now.to_i, 'from_number' => from_number }.merge(extra_meta.stringify_keys)
     )
     # `conference_sid` is a Twilio bridging concept; WhatsApp goes browser↔Meta.
     call.update!(conference_sid: call.default_conference_sid) if call.twilio?

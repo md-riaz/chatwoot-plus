@@ -331,16 +331,70 @@
       "INCOMING_CALL": "Chamada recebida",
       "OUTGOING_CALL": "Chamada realizada",
       "CALL_IN_PROGRESS": "Chamada em andamento",
-      "NOT_ANSWERED_YET": "Ainda não respondido",
+      "NOT_ANSWERED_YET": "Ainda não respondida",
       "HANDLED_IN_ANOTHER_TAB": "Sendo atendida em outra aba",
       "REJECT_CALL": "Recusar",
-      "DISMISS_CALL": "Recusar",
+      "DISMISS_CALL": "Descartar",
       "JOIN_CALL": "Entrar na chamada",
       "END_CALL": "Encerrar chamada",
       "MUTE": "Silenciar microfone",
-      "UNMUTE": "Desilenciar microfone",
+      "UNMUTE": "Ativar microfone",
       "VIEW_CHAT_HISTORY": "Ver histórico da conversa",
-      "GO_TO_CONVERSATION": "Ir para a conversa"
+      "GO_TO_CONVERSATION": "Ir para a conversa",
+      "CONNECTED": "Voz conectada.",
+      "DIALER_TITLE": "Discador",
+      "DIALER_MOVE": "Redefinir posição",
+      "DIALER_HIDE": "Ocultar",
+      "DIALER_NUMBER_LABEL": "Número de telefone",
+      "DIALER_NUMBER_PLACEHOLDER": "Digite o número de telefone",
+      "DIALER_BACKSPACE": "Apagar",
+      "DIALER_CLEAR": "Limpar",
+      "DIALER_CANCEL": "Cancelar",
+      "DIALER_CALL": "Ligar",
+      "DIALER_EMPTY_NUMBER": "Informe um número de telefone.",
+      "DIALER_PICK_INBOX": "Selecione uma caixa de entrada de voz.",
+      "DIALER_SELECT_INBOX_PLACEHOLDER": "Selecione uma caixa de entrada",
+      "DIALER_INVALID_NUMBER": "Informe um número de telefone válido.",
+      "DIALER_FAILED": "Não foi possível iniciar a chamada. Tente novamente.",
+      "DIALPAD_TITLE": "Teclado",
+      "DIALPAD_CLEAR": "Limpar",
+      "DIALPAD_CLOSE": "Fechar",
+      "TRANSFER_TITLE": "Transferir chamada",
+      "TRANSFER_SEARCH_PLACEHOLDER": "Pesquisar agentes",
+      "TRANSFER_CANCEL": "Cancelar",
+      "TRANSFER_CONFIRM": "Transferir",
+      "TRANSFER_SUCCESS": "Transferência de chamada iniciada.",
+      "TRANSFER_ERROR": "Não foi possível transferir a chamada.",
+      "INTERNAL_CALL_BUTTON": "Chamada interna",
+      "INTERNAL_CALL_TITLE": "Iniciar chamada interna",
+      "INTERNAL_CALL_PICK_AGENT": "Selecione o agente",
+      "INTERNAL_CALL_PICK_INBOX": "Selecione a caixa de entrada de voz",
+      "INTERNAL_CALL_PICK_INTERNAL_INBOX": "Selecione a caixa de entrada de chat interno",
+      "INTERNAL_CALL_START": "Iniciar chamada",
+      "INTERNAL_CALL_INITIATED": "Chamada interna iniciada.",
+      "INTERNAL_CALL_FAILED": "Não foi possível iniciar a chamada interna."
+    },
+    "INTERNAL_CHAT": {
+      "TITLE": "Chat interno",
+      "DESCRIPTION": "Inicie uma conversa privada por texto com outros agentes.",
+      "NO_INBOX": "Nenhuma caixa de entrada de chat interno está disponível para sua conta.",
+      "INBOX_LABEL": "Caixa de entrada interna",
+      "INBOX_PLACEHOLDER": "Selecione uma caixa de entrada interna",
+      "TITLE_LABEL": "Título da conversa",
+      "OPTIONAL": "opcional",
+      "TITLE_PLACEHOLDER": "Adicione um título para este chat interno",
+      "PARTICIPANTS_LABEL": "Participantes",
+      "NO_PARTICIPANT_SELECTED": "Nenhum participante selecionado ainda.",
+      "ADD_PARTICIPANTS": "Adicionar participantes",
+      "ADD_ME": "Me adicionar",
+      "SEARCH_PARTICIPANTS": "Pesquisar agentes...",
+      "MESSAGE_LABEL": "Mensagem",
+      "MESSAGE_PLACEHOLDER": "Escreva sua mensagem interna",
+      "CANCEL": "Cancelar",
+      "SUBMIT": "Iniciar chat interno",
+      "SUCCESS": "Chat interno criado com sucesso.",
+      "GO_TO_CONVERSATION": "Abrir conversa",
+      "ERROR": "Não foi possível criar o chat interno."
     }
   },
   "EMAIL_TRANSCRIPT": {
@@ -407,7 +461,8 @@
       "MACROS": "Macros",
       "LINEAR_ISSUES": "Problemas do Linear vinculados",
       "SHOPIFY_ORDERS": "Pedidos do Shopify",
-      "SHARED_FILES": "Anexos"
+      "SHARED_FILES": "Anexos",
+      "SCHEDULED_MESSAGES": "Mensagens agendadas"
     },
     "SHARED_FILES": {
       "EMPTY": "Nenhum anexo ainda",
@@ -504,5 +559,138 @@
   },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Não foi possível baixar o anexo. Por favor, tente novamente"
+  },
+  "SCHEDULED_MESSAGES": {
+    "NEW_BUTTON": "Nova mensagem agendada",
+    "EMPTY_STATE": "Nenhuma mensagem agendada ainda",
+    "PAST_MESSAGES_SECTION": "Mensagens agendadas anteriores",
+    "META": {
+      "AUTHOR_YOU": "{name} (você)"
+    },
+    "STATUS": {
+      "DRAFT": "Rascunho",
+      "PENDING": "Pendente",
+      "SENT": "Enviada",
+      "FAILED": "Falhou"
+    },
+    "ITEM": {
+      "TEMPLATE_PREVIEW": "Modelo: {name}",
+      "EMPTY_PREVIEW": "Sem conteúdo da mensagem",
+      "GO_TO_MESSAGE": "Ir para a mensagem",
+      "NO_SCHEDULE": "Não agendada",
+      "COLLAPSE": "Mostrar menos",
+      "EXPAND": "Mostrar mais",
+      "TEMPLATE_LABEL": "Modelo: {name}",
+      "ATTACHMENT_LABEL": "Anexo: {filename}"
+    },
+    "MODAL": {
+      "TITLE_NEW": "Agendar mensagem",
+      "TITLE_EDIT": "Editar mensagem agendada",
+      "MESSAGE_LABEL": "Mensagem",
+      "MESSAGE_PLACEHOLDER": "Digite a mensagem para enviar depois",
+      "ATTACHMENT_ADD": "Adicionar anexo",
+      "TEMPLATE_SELECT": "Usar modelo",
+      "TEMPLATE_SELECTED": "Modelo selecionado: {name}",
+      "SCHEDULE_LABEL": "Agendamento",
+      "CANCEL": "Cancelar",
+      "SCHEDULE": "Agendar",
+      "SAVE_DRAFT": "Salvar rascunho",
+      "CUSTOM_INPUT_PLACEHOLDER": "Tente “amanhã às 9h”",
+      "DATEPICKER_TOOLTIP": "Escolher data e hora",
+      "PARSED_DATE_IN_PAST": "Escolha um horário futuro",
+      "CUSTOM_INPUT_HINT": "Não foi possível entender esse horário",
+      "CUSTOM_INPUT_HINT_EXAMPLE": "Exemplo: amanhã às 9h",
+      "SHORTCUTS": {
+        "TOMORROW_MORNING": "Amanhã de manhã",
+        "TOMORROW_AFTERNOON": "Amanhã à tarde",
+        "MONDAY_MORNING": "Segunda-feira de manhã",
+        "CUSTOM": "Data e hora personalizadas"
+      },
+      "TEMPLATE_ACTION": "Usar modelo"
+    },
+    "ERRORS": {
+      "DATETIME_REQUIRED": "Escolha quando enviar esta mensagem.",
+      "SCHEDULE_IN_PAST": "O horário agendado deve ser futuro.",
+      "SAVE_FAILED": "Não foi possível salvar a mensagem agendada. Tente novamente.",
+      "CONTENT_REQUIRED": "Digite uma mensagem ou escolha um modelo.",
+      "CONTENT_TOO_LONG": "A mensagem é muito longa. O máximo permitido é {maxLength} caracteres.",
+      "DELETE_FAILED": "Não foi possível excluir a mensagem agendada. Tente novamente."
+    },
+    "CONFIRM_CLOSE": {
+      "TITLE": "Descartar alterações?",
+      "MESSAGE": "Você tem alterações não salvas nesta mensagem agendada.",
+      "CONTINUE_EDITING": "Continuar editando",
+      "DISCARD": "Descartar"
+    },
+    "CONFIRM_DELETE": {
+      "TITLE": "Excluir mensagem agendada?",
+      "MESSAGE": "Esta mensagem agendada será excluída permanentemente.",
+      "CANCEL": "Cancelar",
+      "DELETE": "Excluir"
+    },
+    "RECURRENCE": {
+      "SECTION_TITLE": "Repetir",
+      "NO_REPEAT": "Não repetir",
+      "DAILY": "Diariamente",
+      "WEEKLY": "Semanalmente em {day}",
+      "MONTHLY_NTH": "Mensalmente no(a) {nth} {day}",
+      "MONTHLY_LAST": "Mensalmente no(a) último(a) {day}",
+      "YEARLY": "Anualmente em {dayNum} de {month}",
+      "WEEKDAYS": "Todos os dias úteis",
+      "CUSTOM": "Personalizado",
+      "STATUS_ACTIVE": "Ativo",
+      "STATUS_COMPLETED": "Concluído",
+      "STATUS_CANCELLED": "Cancelado",
+      "NEXT_SEND": "Próximo envio: {time}",
+      "OCCURRENCES_SENT": "{count} ocorrência(s) enviada(s)/com falha",
+      "RESOLVED_WARNING": "Esta conversa está resolvida. Mensagens agendadas serão enviadas apenas se a conversa ainda puder receber respostas.",
+      "WEEKDAYS_SHORT": {
+        "SUN": "dom",
+        "MON": "seg",
+        "TUE": "ter",
+        "WED": "qua",
+        "THU": "qui",
+        "FRI": "sex",
+        "SAT": "sáb"
+      },
+      "DESCRIPTION": {
+        "DAILY_ONE": "Todos os dias",
+        "DAILY_OTHER": "A cada {count} dias",
+        "WEEKLY_ONE": "Toda semana",
+        "WEEKLY_OTHER": "A cada {count} semanas",
+        "WEEKLY_ON": "{prefix} em {days}",
+        "MONTHLY_ONE": "Todo mês",
+        "MONTHLY_OTHER": "A cada {count} meses",
+        "MONTHLY_ON_WEEKDAY": "{prefix} no(a) {ordinal} {weekday}",
+        "YEARLY_ONE": "Todo ano",
+        "YEARLY_OTHER": "A cada {count} anos",
+        "UNTIL_DATE": "até {date}",
+        "AFTER_COUNT": "termina após {count} ocorrência(s)"
+      },
+      "CUSTOM_MODAL": {
+        "TITLE": "Recorrência personalizada",
+        "REPEAT_EVERY": "Repetir a cada",
+        "FREQ_DAILY": "dia(s)",
+        "FREQ_WEEKLY": "semana(s)",
+        "FREQ_MONTHLY": "mês(es)",
+        "FREQ_YEARLY": "ano(s)",
+        "REPEAT_ON": "Repetir em",
+        "MONTHLY_ON_DAY": "Mensalmente neste dia do mês",
+        "MONTHLY_ON_WEEKDAY": "Mensalmente neste dia da semana",
+        "ENDS": "Termina",
+        "ENDS_NEVER": "Nunca",
+        "ENDS_ON_DATE": "Na data",
+        "ENDS_AFTER": "Depois de",
+        "ENDS_OCCURRENCES": "ocorrências",
+        "CANCEL": "Cancelar",
+        "DONE": "Concluir"
+      },
+      "STOP_CONFIRM": {
+        "TITLE": "Parar mensagem recorrente?",
+        "MESSAGE": "Ocorrências futuras agendadas serão canceladas.",
+        "CANCEL": "Cancelar",
+        "CONFIRM": "Parar"
+      }
+    }
   }
 }

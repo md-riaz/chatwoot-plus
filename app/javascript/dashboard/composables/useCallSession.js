@@ -3,6 +3,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import VoiceAPI from 'dashboard/api/channel/voice/voiceAPIClient';
 import TwilioVoiceClient from 'dashboard/api/channel/voice/twilioVoiceClient';
+import CustomVoiceClient from 'dashboard/api/channel/voice/customVoiceClient';
 import { useCallsStore } from 'dashboard/stores/calls';
 import { useAlert } from 'dashboard/composables';
 import {
@@ -20,6 +21,7 @@ import {
 import Timer from 'dashboard/helper/Timer';
 
 const isWhatsappCall = call => call?.provider === VOICE_CALL_PROVIDERS.WHATSAPP;
+const isCustomCall = call => call?.provider === VOICE_CALL_PROVIDERS.CUSTOM;
 
 // Dismissed call sids must not be re-seeded by the conversation-load watcher.
 // Lives at module scope so all consumers share the same set.
@@ -48,8 +50,19 @@ const handleBeforeUnloadGlobal = event => {
   event.returnValue = '';
 };
 const handlePageHideGlobal = () => sendWhatsappTerminateBeacon();
-const handleTwilioDisconnectedGlobal = () =>
-  storedCallsStoreRef?.clearActiveCall();
+const handleProviderDisconnectedGlobal = event => {
+  const detail = event?.detail || {};
+  const callSid = detail.callSid;
+  if (!callSid) {
+    storedCallsStoreRef?.clearActiveCall();
+    return;
+  }
+
+  const activeCall = storedCallsStoreRef?.activeCall;
+  if (activeCall?.callSid === callSid) {
+    storedCallsStoreRef?.clearActiveCall();
+  }
+};
 
 const attachGlobalsOnFirstMount = callsStore => {
   globalsAttachedCount += 1;
@@ -60,7 +73,11 @@ const attachGlobalsOnFirstMount = callsStore => {
   });
   TwilioVoiceClient.addEventListener(
     'call:disconnected',
-    handleTwilioDisconnectedGlobal
+    handleProviderDisconnectedGlobal
+  );
+  CustomVoiceClient.addEventListener(
+    'call:disconnected',
+    handleProviderDisconnectedGlobal
   );
   window.addEventListener('beforeunload', handleBeforeUnloadGlobal);
   window.addEventListener('pagehide', handlePageHideGlobal);
@@ -75,7 +92,11 @@ const detachGlobalsOnLastUnmount = () => {
   storedCallsStoreRef = null;
   TwilioVoiceClient.removeEventListener(
     'call:disconnected',
-    handleTwilioDisconnectedGlobal
+    handleProviderDisconnectedGlobal
+  );
+  CustomVoiceClient.removeEventListener(
+    'call:disconnected',
+    handleProviderDisconnectedGlobal
   );
   window.removeEventListener('beforeunload', handleBeforeUnloadGlobal);
   window.removeEventListener('pagehide', handlePageHideGlobal);
@@ -97,23 +118,39 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
       callsStore.clearActiveCall();
       return;
     }
-
     // try/finally so a failed leaveConference (e.g. backend 5xx) still
-    // tears down the local Device and UI state — otherwise the call stays
+    // tears down the local device and UI state — otherwise the call stays
     // visually active with the mic open.
     try {
       await VoiceAPI.leaveConference({ inboxId, conversationId, callSid });
     } finally {
-      TwilioVoiceClient.endClientCall();
+      if (isCustomCall(call)) {
+        CustomVoiceClient.endClientCall();
+      } else {
+        TwilioVoiceClient.endClientCall();
+      }
       globalDurationTimer?.stop();
       callsStore.clearActiveCall();
     }
   };
 
-  const joinCall = async ({ conversationId, inboxId, callSid }) => {
+  const joinCall = async ({
+    conversationId,
+    inboxId,
+    callSid,
+    provider,
+    callDirection,
+  }) => {
     if (globalIsJoining.value) return null;
 
-    const call = findCall(callSid);
+    const storedCall = findCall(callSid);
+    const call = storedCall
+      ? {
+          ...storedCall,
+          provider: storedCall.provider || provider,
+          callDirection: storedCall.callDirection || callDirection,
+        }
+      : { provider, callDirection };
     // Outbound *WhatsApp* calls have no separate join step — the offer was
     // sent at initiate time and the answer is applied by the cable handler.
     // Routing through acceptIncomingCall here would call prepareInboundAnswer →
@@ -139,6 +176,59 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
         globalDurationTimer?.start();
         return { callId: call.callId };
       }
+      if (isCustomCall(call)) {
+        await CustomVoiceClient.initializeDevice(inboxId);
+
+        const isInboundCustomCall = [
+          VOICE_CALL_DIRECTION.INCOMING,
+          VOICE_CALL_DIRECTION.INBOUND,
+        ].includes(call?.callDirection);
+
+        if (isInboundCustomCall) {
+          const accepted = await CustomVoiceClient.acceptIncomingCall({
+            callSid,
+          });
+
+          if (!accepted) {
+            throw new Error(t('CONTACT_PANEL.CALL_FAILED'));
+          }
+
+          const joinResponse = await VoiceAPI.joinConference({
+            conversationId,
+            inboxId,
+            callSid,
+          });
+
+          callsStore.setCallActive(callSid);
+          globalDurationTimer?.start();
+
+          return { conferenceSid: joinResponse?.conference_sid };
+        }
+
+        const joinResponse = await VoiceAPI.joinConference({
+          conversationId,
+          inboxId,
+          callSid,
+        });
+
+        const target =
+          joinResponse?.sip_target ||
+          joinResponse?.to ||
+          joinResponse?.conference_sid;
+        await CustomVoiceClient.joinClientCall({
+          to: target,
+          conversationId,
+          callSid,
+        });
+
+        callsStore.setCallActive(callSid);
+        globalDurationTimer?.start();
+
+        return {
+          conferenceSid: joinResponse?.conference_sid,
+          sipTarget: joinResponse?.sip_target,
+        };
+      }
 
       const device = await TwilioVoiceClient.initializeDevice(inboxId);
       if (!device) return null;
@@ -162,14 +252,19 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
     } catch (error) {
       useAlert(error?.response?.data?.error || t('CONTACT_PANEL.CALL_FAILED'));
       if (error?.response?.status === 409) {
-        TwilioVoiceClient.endClientCall();
+        if (isCustomCall(call)) {
+          CustomVoiceClient.endClientCall();
+        } else {
+          TwilioVoiceClient.endClientCall();
+        }
         markDismissed(callSid);
         callsStore.dismissCall(callSid);
       } else if (!isWhatsappCall(call)) {
-        // Tear down the Twilio Device on any other join error so a retry
-        // starts from a clean state — joinClientCall can leave the device
-        // half-initialized after a network blip.
-        TwilioVoiceClient.endClientCall();
+        if (isCustomCall(call)) {
+          CustomVoiceClient.endClientCall();
+        } else {
+          TwilioVoiceClient.endClientCall();
+        }
       }
       // eslint-disable-next-line no-console
       console.error('Failed to join call:', error);
@@ -195,10 +290,16 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
         } else {
           await whatsappSession.rejectIncomingCall(call.callId);
         }
+      } else if (isCustomCall(call)) {
+        CustomVoiceClient.rejectIncomingCall({ callSid });
+        if (call?.inboxId && call?.conversationId) {
+          await VoiceAPI.leaveConference({
+            inboxId: call.inboxId,
+            conversationId: call.conversationId,
+            callSid,
+          });
+        }
       } else if (call?.inboxId && call?.conversationId) {
-        // Twilio incoming reject: agent hasn't joined the Device yet, so
-        // endClientCall is a no-op. End the conference server-side instead
-        // so Twilio hangs up the inbound leg.
         await VoiceAPI.leaveConference({
           inboxId: call.inboxId,
           conversationId: call.conversationId,
@@ -218,7 +319,52 @@ const buildCallActions = ({ callsStore, whatsappSession, t }) => {
     callsStore.dismissCall(callSid);
   };
 
-  return { endCall, joinCall, rejectIncomingCall, dismissCall };
+  const transferCall = async ({
+    conversationId,
+    inboxId,
+    targetAgentId,
+    callSid,
+  }) => {
+    const response = await VoiceAPI.transferCall({
+      conversationId,
+      inboxId,
+      targetAgentId,
+      callSid,
+    });
+
+    const activeCall = callsStore.activeCall;
+    if (
+      response?.mode === 'sip_refer' &&
+      response?.refer_to &&
+      activeCall?.callSid === callSid &&
+      activeCall?.inboxId === inboxId &&
+      isCustomCall(activeCall)
+    ) {
+      CustomVoiceClient.transferCall({
+        referTo: response.refer_to,
+      });
+    }
+
+    return response;
+  };
+
+  const sendDtmf = ({ inboxId, digits }) => {
+    const call = callsStore.activeCall;
+    if (call?.inboxId !== inboxId || !isCustomCall(call)) {
+      return false;
+    }
+
+    return CustomVoiceClient.sendDtmf(digits);
+  };
+
+  return {
+    endCall,
+    joinCall,
+    rejectIncomingCall,
+    dismissCall,
+    transferCall,
+    sendDtmf,
+  };
 };
 
 const buildReactiveSurface = callsStore => {
@@ -301,7 +447,12 @@ export function useCallSession() {
 
   const actions = buildCallActions({ callsStore, whatsappSession, t });
 
-  return { ...reactive, ...actions };
+  return {
+    ...reactive,
+    ...actions,
+    transferCall: actions.transferCall,
+    sendDtmf: actions.sendDtmf,
+  };
 }
 
 // Lightweight consumer for components that need to read state and trigger
@@ -316,5 +467,10 @@ export function useCallActions() {
   const reactive = buildReactiveSurface(callsStore);
   const actions = buildCallActions({ callsStore, whatsappSession, t });
 
-  return { ...reactive, ...actions };
+  return {
+    ...reactive,
+    ...actions,
+    transferCall: actions.transferCall,
+    sendDtmf: actions.sendDtmf,
+  };
 }

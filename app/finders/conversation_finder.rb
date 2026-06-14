@@ -148,6 +148,8 @@ class ConversationFinder
       @conversations = current_user.participating_conversations.where(account_id: current_account.id)
     when 'unattended'
       @conversations = @conversations.unattended
+    when 'internal'
+      @conversations = @conversations.where(inbox_id: current_account.inboxes.where(channel_type: 'Channel::Internal'))
     end
     @conversations
   end

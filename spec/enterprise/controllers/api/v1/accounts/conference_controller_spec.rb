@@ -173,4 +173,85 @@ RSpec.describe Api::V1::Accounts::ConferenceController, type: :request do
       end
     end
   end
+
+  describe 'POST /conference/upload_recording' do
+    let(:voice_channel) { create(:channel_voice, account: account, provider: 'custom') }
+    let(:message) { create(:message, account: account, inbox: voice_inbox, conversation: conversation, sender: agent) }
+
+    before { create(:inbox_member, inbox: voice_inbox, user: agent) }
+
+    it 'attaches the recording to the call message' do
+      create(
+        :call,
+        account: account,
+        inbox: voice_inbox,
+        conversation: conversation,
+        contact: conversation.contact,
+        provider: :custom,
+        provider_call_id: 'CALL123',
+        message: message
+      )
+
+      post "/api/v1/accounts/#{account.id}/inboxes/#{voice_inbox.id}/conference/upload_recording",
+           headers: agent.create_new_auth_token,
+           params: {
+             conversation_id: conversation.display_id,
+             call_sid: 'CALL123',
+             recording: fixture_file_upload(Rails.root.join('spec/assets/avatar.png'), 'audio/webm')
+           }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['status']).to eq('uploaded')
+      expect(message.attachments.where(file_type: :audio).count).to eq(1)
+    end
+
+    it 'does not attach a second audio recording' do
+      message.attachments.create!(
+        account_id: account.id,
+        file_type: :audio,
+        file: fixture_file_upload(Rails.root.join('spec/assets/avatar.png'), 'audio/webm')
+      )
+      create(
+        :call,
+        account: account,
+        inbox: voice_inbox,
+        conversation: conversation,
+        contact: conversation.contact,
+        provider: :custom,
+        provider_call_id: 'CALL123',
+        message: message
+      )
+
+      post "/api/v1/accounts/#{account.id}/inboxes/#{voice_inbox.id}/conference/upload_recording",
+           headers: agent.create_new_auth_token,
+           params: {
+             conversation_id: conversation.display_id,
+             call_sid: 'CALL123',
+             recording: fixture_file_upload(Rails.root.join('spec/assets/avatar.png'), 'audio/webm')
+           }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['status']).to eq('already_uploaded')
+      expect(message.attachments.where(file_type: :audio).count).to eq(1)
+    end
+
+    it 'rejects missing recordings' do
+      create(
+        :call,
+        account: account,
+        inbox: voice_inbox,
+        conversation: conversation,
+        contact: conversation.contact,
+        provider: :custom,
+        provider_call_id: 'CALL123',
+        message: message
+      )
+
+      post "/api/v1/accounts/#{account.id}/inboxes/#{voice_inbox.id}/conference/upload_recording",
+           headers: agent.create_new_auth_token,
+           params: { conversation_id: conversation.display_id, call_sid: 'CALL123' }
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
 end

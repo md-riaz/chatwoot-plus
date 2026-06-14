@@ -39,7 +39,7 @@ class Call < ApplicationRecord
 
   DEFAULT_STUN_URL = 'stun:stun.l.google.com:19302'.freeze
 
-  enum :provider, { twilio: 0, whatsapp: 1 }
+  enum :provider, { twilio: 0, whatsapp: 1, custom: 2 }
   enum :direction, { incoming: 0, outgoing: 1 }
 
   belongs_to :account
@@ -95,7 +95,15 @@ class Call < ApplicationRecord
   end
 
   def from_number
-    incoming? ? contact.phone_number : inbox.channel&.phone_number
+    return inbox.channel&.phone_number unless incoming?
+
+    meta['from_number'].presence || contact.phone_number || custom_source_id
+  end
+
+  def custom_source_id
+    return unless custom?
+
+    conversation.contact_inbox&.source_id
   end
 
   def to_number

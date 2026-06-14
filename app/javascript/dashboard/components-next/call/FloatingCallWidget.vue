@@ -170,6 +170,8 @@ const handleJoinCall = async call => {
     conversationId: call.conversationId,
     inboxId: call.inboxId || conversation?.inbox_id,
     callSid: call.callSid,
+    provider: call.provider,
+    callDirection: call.callDirection,
   });
 
   if (result && conversation) {

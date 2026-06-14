@@ -93,6 +93,9 @@ class Account < ApplicationRecord
   has_many :recurring_scheduled_messages, dependent: :destroy_async
   has_many :scheduled_messages, dependent: :destroy_async
   has_many :sms_channels, dependent: :destroy_async, class_name: '::Channel::Sms'
+  has_many :internal_channels, dependent: :destroy_async, class_name: '::Channel::Internal'
+  has_many :voice_channels, dependent: :destroy_async, class_name: '::Channel::Voice'
+
   has_many :teams, dependent: :destroy_async
   has_many :telegram_channels, dependent: :destroy_async, class_name: '::Channel::Telegram'
   has_many :twilio_sms, dependent: :destroy_async, class_name: '::Channel::TwilioSms'

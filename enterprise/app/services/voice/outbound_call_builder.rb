@@ -19,7 +19,7 @@ class Voice::OutboundCallBuilder
 
     ActiveRecord::Base.transaction do
       contact_inbox = ensure_contact_inbox!
-      conversation = @existing_conversation || create_conversation!(contact_inbox)
+      conversation = @existing_conversation || find_reusable_conversation(contact_inbox) || create_conversation!(contact_inbox)
       call_sid = initiate_call!
       call = create_call!(conversation, call_sid)
       message = Voice::CallMessageBuilder.new(call).perform!
@@ -39,6 +39,16 @@ class Voice::OutboundCallBuilder
     end
   end
 
+  def find_reusable_conversation(contact_inbox)
+    return unless inbox.lock_to_single_conversation?
+
+    conversation = contact_inbox.conversations.order(created_at: :desc).first
+    return unless conversation
+
+    conversation.open! unless conversation.open?
+    conversation
+  end
+
   def create_conversation!(contact_inbox)
     account.conversations.create!(
       contact_inbox_id: contact_inbox.id,
@@ -49,7 +59,8 @@ class Voice::OutboundCallBuilder
   end
 
   def initiate_call!
-    inbox.channel.initiate_call(to: contact.phone_number)[:call_sid]
+    @provider_response = inbox.channel.initiate_call(to: contact.phone_number)
+    @provider_response[:call_sid]
   end
 
   def create_call!(conversation, call_sid)
@@ -59,13 +70,21 @@ class Voice::OutboundCallBuilder
       conversation: conversation,
       contact: contact,
       accepted_by_agent: user,
-      provider: :twilio,
+      provider: provider_key,
       direction: :outgoing,
       status: 'ringing',
       provider_call_id: call_sid,
       meta: { 'initiated_at' => Time.zone.now.to_i }
     )
-    call.update!(conference_sid: call.default_conference_sid)
+    call.update!(conference_sid: provider_conference_sid || call.default_conference_sid)
     call
+  end
+
+  def provider_key
+    inbox.channel.respond_to?(:provider) && inbox.channel.provider.to_s == 'custom' ? :custom : :twilio
+  end
+
+  def provider_conference_sid
+    @provider_response[:conference_sid] || @provider_response['conference_sid']
   end
 end

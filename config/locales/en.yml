@@ -264,6 +264,7 @@ en:
       voice_call:
         twilio: 'Voice Call'
         whatsapp: 'WhatsApp Call'
+        custom: 'Voice Call'
       delivery_status:
         error_code: 'Error code: %{error_code}'
     activity:
