@@ -191,6 +191,9 @@ const activeFolder = computed(() => {
   return undefined;
 });
 
+const getContact = useMapGetter('contacts/getContact');
+const folderContactId = useMapGetter('customViews/getActiveFolderContactId');
+
 const activeFolderName = computed(() => {
   return activeFolder.value?.name;
 });
@@ -396,9 +399,7 @@ const conversationList = computed(() => {
       activeAssigneeTab.value === wootConstants.ASSIGNEE_TYPE.UNASSIGNED
     ) {
       localConversationList = [...unAssignedChatsList.value(filters)];
-    } else if (
-      activeAssigneeTab.value === wootConstants.ASSIGNEE_TYPE.GROUPS
-    ) {
+    } else if (activeAssigneeTab.value === wootConstants.ASSIGNEE_TYPE.GROUPS) {
       localConversationList = [...groupChatsList.value(filters)];
     } else if (
       activeAssigneeTab.value === wootConstants.ASSIGNEE_TYPE.WAITING
@@ -548,6 +549,7 @@ function setParamsForEditFolderModal() {
     inboxes: inboxesList.value,
     labels: labels.value,
     campaigns: campaigns.value,
+    contacts: [getContact.value(folderContactId.value)],
     languages: languages,
     countries: countries,
     priority: [

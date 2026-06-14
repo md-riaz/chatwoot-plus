@@ -55,7 +55,9 @@ Rails.application.routes.draw do
             resource :contact_merge, only: [:create]
           end
           resource :bulk_actions, only: [:create]
-          resource :onboarding, only: [:update]
+          resource :onboarding, only: [:update] do
+            get :help_center_generation
+          end
           resources :agents, only: [:index, :create, :update, :destroy] do
             post :bulk_create, on: :collection
           end
@@ -272,6 +274,7 @@ Rails.application.routes.draw do
               end
               post :enable_whatsapp_calling, on: :member
               post :disable_whatsapp_calling, on: :member
+              post :set_inbound_calls, on: :member
             end
 
             resource :csat_template, only: [:show, :create], controller: 'inbox_csat_templates' do
@@ -446,6 +449,7 @@ Rails.application.routes.draw do
             post :verify
             post :backup_codes
           end
+          resources :sessions, only: [:index, :destroy]
         end
       end
 
