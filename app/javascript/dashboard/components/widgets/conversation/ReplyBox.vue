@@ -324,7 +324,6 @@ export default {
         this.isASmsInbox ||
         this.isATelegramChannel ||
         this.isALineChannel ||
-        this.isANotificaMeChannel ||
         this.isAnInstagramChannel ||
         this.channelType === INBOX_TYPES.INTERNAL ||
         (this.isATiktokChannel && tiktokAttachmentSupported)
@@ -405,7 +404,6 @@ export default {
         isAWhatsAppCloudChannel: this.isAWhatsAppCloudChannel,
         isAWhatsAppChannel: this.isAWhatsAppChannel,
         isATelegramChannel: this.isATelegramChannel,
-        isANotificaMeChannel: this.isANotificaMeChannel,
         isAPIInbox: this.isAPIInbox,
       });
     },

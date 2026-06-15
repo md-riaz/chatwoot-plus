@@ -84,24 +84,6 @@
       "EVERYONE": "Todos",
       "EVERYONE_DESCRIPTION": "Notificar todos os membros"
     },
-    "BAILEYS_OPTIONS": {
-      "MEMBERS_CAN": "Os membros do grupo podem:",
-      "ADMINS_CAN": "Os admins do grupo podem:",
-      "EDIT_GROUP_SETTINGS": "Editar configurações do grupo",
-      "EDIT_GROUP_SETTINGS_DESCRIPTION": "Inclui o nome do grupo, a imagem, a descrição, a duração das mensagens temporárias, a privacidade avançada da conversa e permite fixar e salvar mensagens na conversa ou reverter essa ação.",
-      "SEND_MESSAGES": "Enviar novas mensagens",
-      "ADD_MEMBERS": "Adicionar membros",
-      "RESET_INVITE_LINK": "Redefinir link de convite",
-      "RESET_INVITE_LINK_SUCCESS": "O link de convite foi redefinido com sucesso.",
-      "RESET_INVITE_LINK_ERROR": "Falha ao redefinir o link de convite. Por favor, tente novamente.",
-      "RESETTING_INVITE_LINK": "Redefinindo...",
-      "DISABLE_ADD_MEMBERS_CONFIRM_TITLE": "Restringir adição de membros?",
-      "DISABLE_ADD_MEMBERS_CONFIRM_DESCRIPTION": "Ao desabilitar esta opção, apenas admins poderão adicionar membros e o link de convite atual será redefinido. Deseja continuar?",
-      "DISABLE_ADD_MEMBERS_CONFIRM_YES": "Confirmar",
-      "DISABLE_ADD_MEMBERS_CONFIRM_NO": "Cancelar",
-      "APPROVE_MEMBERS": "Aprovar novos membros",
-      "APPROVE_MEMBERS_DESCRIPTION": "Enquanto essa opção estiver ativada, os admins deverão aprovar a entrada de membros no grupo."
-    },
     "SETTINGS": {
       "SECTION_TITLE": "Configurações do Grupo",
       "ANNOUNCEMENT_MODE": "Modo Anúncio",

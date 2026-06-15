@@ -51,7 +51,7 @@ RSpec.describe Contacts::SyncGroupJob do
 
     it 'rescues ProviderUnavailableError without re-raising' do
       allow(Contacts::SyncGroupService).to receive(:new).and_raise(
-        Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Provider offline'
+        Groups::ProviderUnavailableError, 'Provider offline'
       )
 
       expect { described_class.perform_now(contact) }.not_to raise_error

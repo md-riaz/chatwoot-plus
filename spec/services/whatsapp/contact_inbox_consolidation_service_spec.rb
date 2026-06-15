@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe Whatsapp::ContactInboxConsolidationService do
   let!(:whatsapp_channel) do
-    create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false)
+    create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false)
   end
   let(:inbox) { whatsapp_channel.inbox }
   let(:phone) { '5511912345678' }

@@ -21,7 +21,7 @@ RSpec.describe Contacts::SyncGroupService do
     end
 
     it 'calls channel.sync_group with a conversation' do
-      channel = create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false)
+      channel = create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false)
       contact = create(:contact, account: channel.account, group_type: :group, identifier: 'group@g.us')
       contact_inbox = create(:contact_inbox, contact: contact, inbox: channel.inbox)
       conversation = create(:conversation, account: channel.account, inbox: channel.inbox, contact: contact, contact_inbox: contact_inbox)
@@ -35,7 +35,7 @@ RSpec.describe Contacts::SyncGroupService do
     end
 
     it 'dispatches contact_group_synced event' do
-      channel = create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false)
+      channel = create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false)
       contact = create(:contact, account: channel.account, group_type: :group, identifier: 'group@g.us')
       contact_inbox = create(:contact_inbox, contact: contact, inbox: channel.inbox)
       create(:conversation, account: channel.account, inbox: channel.inbox, contact: contact, contact_inbox: contact_inbox)

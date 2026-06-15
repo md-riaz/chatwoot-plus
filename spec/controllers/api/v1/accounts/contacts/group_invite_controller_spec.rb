@@ -4,18 +4,17 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_invite', type: 
   let(:account) { create(:account) }
   let(:admin) { create(:user, account: account, role: :administrator) }
   let(:whatsapp_channel) do
-    create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false, sync_templates: false, account: account)
+    create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false, sync_templates: false, account: account)
   end
   let(:inbox) { whatsapp_channel.inbox }
   let(:group_contact) { create(:contact, account: account, group_type: :group, identifier: 'group@g.us') }
   let(:conversation) { create(:conversation, account: account, contact: group_contact, inbox: inbox, group_type: :group) }
-  let(:baileys_service) { instance_double(Whatsapp::Providers::WhatsappBaileysService) }
+  let(:provider_service) { whatsapp_channel }
 
   before do
     conversation
-    allow(Whatsapp::Providers::WhatsappBaileysService).to receive(:new).and_return(baileys_service)
-    allow(baileys_service).to receive(:group_invite_code).and_return('ABCXYZ')
-    allow(baileys_service).to receive(:revoke_group_invite).and_return('NEWCODE')
+    allow(provider_service).to receive(:group_invite_code).and_return('ABCXYZ')
+    allow(provider_service).to receive(:revoke_group_invite).and_return('NEWCODE')
   end
 
   describe 'GET /api/v1/accounts/{account.id}/contacts/:id/group_invite' do
@@ -37,8 +36,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_invite', type: 
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:group_invite_code)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:group_invite_code)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         get "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_invite",
             headers: admin.create_new_auth_token
@@ -61,8 +60,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_invite', type: 
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:revoke_group_invite)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:revoke_group_invite)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         post "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_invite/revoke",
              headers: admin.create_new_auth_token

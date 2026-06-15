@@ -42,7 +42,7 @@ RSpec.describe '/api/v1/accounts/{account.id}/groups', type: :request do
 
       it 'returns 422 when provider is unavailable' do
         allow(create_service).to receive(:perform)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Unavailable')
+          .and_raise(Groups::ProviderUnavailableError, 'Unavailable')
 
         post "/api/v1/accounts/#{account.id}/groups",
              params: { inbox_id: inbox.id, subject: 'Test Group', participants: [] },

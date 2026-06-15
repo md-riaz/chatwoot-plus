@@ -14,7 +14,6 @@ describe('#getAudioRecordFormat', () => {
   it.each([
     ['WhatsApp', { isAWhatsAppChannel: true }],
     ['Telegram', { isATelegramChannel: true }],
-    ['NotificaMe', { isANotificaMeChannel: true }],
     ['API inbox', { isAPIInbox: true }],
   ])('uses MP3 for %s audio recordings', (_name, flags) => {
     expect(getAudioRecordFormat(flags)).toBe(AUDIO_FORMATS.MP3);

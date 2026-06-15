@@ -4,18 +4,17 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_metadata', type
   let(:account) { create(:account) }
   let(:admin) { create(:user, account: account, role: :administrator) }
   let(:whatsapp_channel) do
-    create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false, sync_templates: false, account: account)
+    create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false, sync_templates: false, account: account)
   end
   let(:inbox) { whatsapp_channel.inbox }
   let(:group_contact) { create(:contact, account: account, group_type: :group, identifier: 'group@g.us', name: 'Old Name') }
   let(:conversation) { create(:conversation, account: account, contact: group_contact, inbox: inbox, group_type: :group) }
-  let(:baileys_service) { instance_double(Whatsapp::Providers::WhatsappBaileysService) }
+  let(:provider_service) { whatsapp_channel }
 
   before do
     conversation
-    allow(Whatsapp::Providers::WhatsappBaileysService).to receive(:new).and_return(baileys_service)
-    allow(baileys_service).to receive(:update_group_subject).and_return(true)
-    allow(baileys_service).to receive(:update_group_description).and_return(true)
+    allow(provider_service).to receive(:update_group_subject).and_return(true)
+    allow(provider_service).to receive(:update_group_description).and_return(true)
   end
 
   describe 'PATCH /api/v1/accounts/{account.id}/contacts/:id/group_metadata' do
@@ -34,7 +33,7 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_metadata', type
 
         expect(response).to have_http_status(:ok)
         expect(group_contact.reload.name).to eq('New Group Name')
-        expect(baileys_service).to have_received(:update_group_subject).with('group@g.us', 'New Group Name')
+        expect(provider_service).to have_received(:update_group_subject).with('group@g.us', 'New Group Name')
       end
 
       it 'updates the group description' do
@@ -44,7 +43,7 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_metadata', type
 
         expect(response).to have_http_status(:ok)
         expect(group_contact.reload.additional_attributes['description']).to eq('A new description')
-        expect(baileys_service).to have_received(:update_group_description).with('group@g.us', 'A new description')
+        expect(provider_service).to have_received(:update_group_description).with('group@g.us', 'A new description')
       end
 
       it 'updates both subject and description' do
@@ -58,8 +57,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_metadata', type
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:update_group_subject)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:update_group_subject)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         patch "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_metadata",
               params: { subject: 'New Name' },

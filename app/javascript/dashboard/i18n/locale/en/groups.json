@@ -84,24 +84,6 @@
       "EVERYONE": "Everyone",
       "EVERYONE_DESCRIPTION": "Notify all members"
     },
-    "BAILEYS_OPTIONS": {
-      "MEMBERS_CAN": "Group members can:",
-      "ADMINS_CAN": "Group admins can:",
-      "EDIT_GROUP_SETTINGS": "Edit group settings",
-      "EDIT_GROUP_SETTINGS_DESCRIPTION": "Includes group name, image, description, disappearing messages duration, advanced conversation privacy, and allows pinning and saving messages in the conversation or reverting this action.",
-      "SEND_MESSAGES": "Send new messages",
-      "ADD_MEMBERS": "Add members",
-      "RESET_INVITE_LINK": "Reset invite link",
-      "RESET_INVITE_LINK_SUCCESS": "Invite link has been reset successfully.",
-      "RESET_INVITE_LINK_ERROR": "Failed to reset invite link. Please try again.",
-      "RESETTING_INVITE_LINK": "Resetting...",
-      "DISABLE_ADD_MEMBERS_CONFIRM_TITLE": "Restrict member additions?",
-      "DISABLE_ADD_MEMBERS_CONFIRM_DESCRIPTION": "By disabling this option, only admins will be able to add members and the current invite link will be reset. Do you want to continue?",
-      "DISABLE_ADD_MEMBERS_CONFIRM_YES": "Confirm",
-      "DISABLE_ADD_MEMBERS_CONFIRM_NO": "Cancel",
-      "APPROVE_MEMBERS": "Approve new members",
-      "APPROVE_MEMBERS_DESCRIPTION": "While this option is enabled, admins must approve new members joining the group."
-    },
     "SETTINGS": {
       "SECTION_TITLE": "Group Settings",
       "ANNOUNCEMENT_MODE": "Announcement Mode",

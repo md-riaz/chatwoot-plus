@@ -71,6 +71,85 @@ class Channel::Whatsapp < ApplicationRecord
     end
   end
 
+  def allow_group_creation?
+    provider == 'unoapi'
+  end
+
+  def create_group(subject, participants)
+    response = provider_service.create_group(subject: subject, participants: participants)
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to create group') unless response.success?
+
+    (response.parsed_response || {}).deep_symbolize_keys
+  end
+
+  def update_group_subject(group_id, subject)
+    update_group(group_id: group_id, subject: subject)
+  end
+
+  def update_group_description(group_id, description)
+    update_group(group_id: group_id, description: description)
+  end
+
+  def update_group_picture(group_id, image_base64)
+    update_group(group_id: group_id, picture_url: image_base64)
+  end
+
+  def group_invite_code(group_id)
+    invite_code_from_link(provider_group_invite_link(group_id))
+  end
+
+  def revoke_group_invite(group_id)
+    invite_code_from_link(provider_reset_group_invite_link(group_id))
+  end
+
+  def update_group_participants(group_id, participants, action)
+    case action
+    when 'add'
+      response = provider_service.add_group_participants(group_id: group_id, participants: participants)
+    when 'remove'
+      response = provider_service.remove_group_participants(group_id: group_id, participants: participants)
+    else
+      raise Groups::ProviderUnavailableError, 'Group participant role updates are not supported by this provider'
+    end
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to update group participants') unless response.success?
+
+    true
+  end
+
+  def group_join_requests(group_id)
+    response = provider_service.group_join_requests(group_id)
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to fetch group join requests') unless response.success?
+
+    response.parsed_response
+  end
+
+  def handle_group_join_requests(group_id, participants, action)
+    response = if action == 'approve'
+                 provider_service.approve_group_join_requests(group_id: group_id, participants: participants)
+               else
+                 provider_service.reject_group_join_requests(group_id: group_id, participants: participants)
+               end
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to handle group join requests') unless response.success?
+
+    true
+  end
+
+  def group_leave(_group_id)
+    raise Groups::ProviderUnavailableError, 'Group leave is not supported by this provider'
+  end
+
+  def group_setting_update(_group_id, _property, _enabled)
+    raise Groups::ProviderUnavailableError, 'Group settings are not supported by this provider'
+  end
+
+  def group_join_approval_mode(_group_id, _mode)
+    raise Groups::ProviderUnavailableError, 'Group join approval changes are not supported by this provider'
+  end
+
+  def group_member_add_mode(_group_id, _mode)
+    raise Groups::ProviderUnavailableError, 'Group member add mode changes are not supported by this provider'
+  end
+
   # Enables voice: turns calling on at Meta (idempotent), then re-registers webhooks
   # with the in-memory calling_enabled flag so the `calls` field is subscribed. The
   # flag is persisted only after registration succeeds, so a webhook failure can't
@@ -161,6 +240,42 @@ class Channel::Whatsapp < ApplicationRecord
 
   def teardown_webhooks
     Whatsapp::WebhookTeardownService.new(self).perform
+  end
+
+  def update_group(group_id:, subject: nil, description: nil, picture_url: nil)
+    response = provider_service.update_group(group_id: group_id, subject: subject, description: description, picture_url: picture_url)
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to update group') unless response.success?
+
+    true
+  end
+
+  def provider_group_invite_link(group_id)
+    response = provider_service.group_invite_link(group_id)
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to fetch invite link') unless response.success?
+
+    parsed_invite_link(response)
+  end
+
+  def provider_reset_group_invite_link(group_id)
+    response = provider_service.reset_group_invite_link(group_id)
+    raise Groups::ProviderUnavailableError, provider_error(response, 'Provider failed to reset invite link') unless response.success?
+
+    parsed_invite_link(response)
+  end
+
+  def parsed_invite_link(response)
+    payload = (response.parsed_response || {}).with_indifferent_access
+    payload[:invite_link] || payload[:inviteLink] || payload[:link] || payload.dig(:group, :invite_link) || payload.dig(:group, :inviteLink)
+  end
+
+  def invite_code_from_link(invite_link)
+    invite_link.to_s.split('/').last
+  end
+
+  def provider_error(response, fallback)
+    parsed = response.parsed_response if response.respond_to?(:parsed_response)
+    parsed = parsed.with_indifferent_access if parsed.respond_to?(:with_indifferent_access)
+    parsed&.dig(:error, :message) || parsed&.dig(:error) || fallback
   end
 
   def should_auto_setup_webhooks?

@@ -14,7 +14,7 @@ class Whatsapp::MentionConverterService
       result
     end
 
-    # Replaces @DisplayName with @<jid_user> in outgoing rendered text so Baileys can match mentions
+    # Replaces @DisplayName with @<jid_user> in outgoing rendered text so WhatsApp can match mentions
     def replace_mentions_in_outgoing_text(raw_content, rendered_text, account)
       return rendered_text if raw_content.blank? || rendered_text.blank?
 

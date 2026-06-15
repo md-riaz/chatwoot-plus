@@ -4,19 +4,18 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_join_requests',
   let(:account) { create(:account) }
   let(:admin) { create(:user, account: account, role: :administrator) }
   let(:whatsapp_channel) do
-    create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false, sync_templates: false, account: account)
+    create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false, sync_templates: false, account: account)
   end
   let(:inbox) { whatsapp_channel.inbox }
   let(:group_contact) { create(:contact, account: account, group_type: :group, identifier: 'group@g.us') }
   let(:conversation) { create(:conversation, account: account, contact: group_contact, inbox: inbox, group_type: :group) }
-  let(:baileys_service) { instance_double(Whatsapp::Providers::WhatsappBaileysService) }
+  let(:provider_service) { whatsapp_channel }
   let(:join_requests) { [{ 'jid' => '551199999@s.whatsapp.net', 'name' => 'Alice' }] }
 
   before do
     conversation
-    allow(Whatsapp::Providers::WhatsappBaileysService).to receive(:new).and_return(baileys_service)
-    allow(baileys_service).to receive(:group_join_requests).and_return(join_requests)
-    allow(baileys_service).to receive(:handle_group_join_requests).and_return(true)
+    allow(provider_service).to receive(:group_join_requests).and_return(join_requests)
+    allow(provider_service).to receive(:handle_group_join_requests).and_return(true)
   end
 
   describe 'GET /api/v1/accounts/{account.id}/contacts/:id/group_join_requests' do
@@ -37,8 +36,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_join_requests',
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:group_join_requests)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:group_join_requests)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         get "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_join_requests",
             headers: admin.create_new_auth_token
@@ -57,13 +56,13 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_join_requests',
              headers: admin.create_new_auth_token
 
         expect(response).to have_http_status(:ok)
-        expect(baileys_service).to have_received(:handle_group_join_requests)
+        expect(provider_service).to have_received(:handle_group_join_requests)
           .with('group@g.us', ['551199999@s.whatsapp.net'], 'approve')
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:handle_group_join_requests)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:handle_group_join_requests)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         post "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_join_requests/handle",
              params: { participants: ['551199999@s.whatsapp.net'], request_action: 'approve' },

@@ -4,14 +4,13 @@ export const getAudioRecordFormat = ({
   isAWhatsAppCloudChannel = false,
   isAWhatsAppChannel = false,
   isATelegramChannel = false,
-  isANotificaMeChannel = false,
   isAPIInbox = false,
 } = {}) => {
   if (isAWhatsAppCloudChannel) {
     return AUDIO_FORMATS.OGG;
   }
 
-  if (isAWhatsAppChannel || isATelegramChannel || isANotificaMeChannel) {
+  if (isAWhatsAppChannel || isATelegramChannel) {
     return AUDIO_FORMATS.MP3;
   }
 

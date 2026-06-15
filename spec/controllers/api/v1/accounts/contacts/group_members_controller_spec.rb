@@ -85,16 +85,15 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
 
   describe 'POST /api/v1/accounts/{account.id}/contacts/:id/group_members' do
     let(:whatsapp_channel) do
-      create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false, sync_templates: false, account: account)
+      create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false, sync_templates: false, account: account)
     end
     let(:inbox) { whatsapp_channel.inbox }
     let(:group_contact) { create(:contact, account: account, group_type: :group, identifier: 'group@g.us') }
-    let(:baileys_service) { instance_double(Whatsapp::Providers::WhatsappBaileysService) }
+    let(:provider_service) { whatsapp_channel }
 
     before do
       create(:contact_inbox, inbox: inbox, contact: group_contact)
-      allow(Whatsapp::Providers::WhatsappBaileysService).to receive(:new).and_return(baileys_service)
-      allow(baileys_service).to receive(:update_group_participants).and_return(true)
+      allow(provider_service).to receive(:update_group_participants).and_return(true)
     end
 
     context 'when unauthenticated' do
@@ -106,7 +105,7 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
 
     context 'when user is logged in' do
       it 'adds members and returns ok' do
-        allow(baileys_service).to receive(:validate_provider_config?).and_return(true)
+        allow(provider_service).to receive(:validate_provider_config?).and_return(true)
         allow(ContactInboxWithContactBuilder).to receive(:new).and_call_original
 
         post "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_members",
@@ -117,8 +116,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:update_group_participants)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:update_group_participants)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         post "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_members",
              params: { participants: ['+5511999990001'] },
@@ -132,18 +131,17 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
 
   describe 'DELETE /api/v1/accounts/{account.id}/contacts/:id/group_members/:id' do
     let(:whatsapp_channel) do
-      create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false, sync_templates: false, account: account)
+      create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false, sync_templates: false, account: account)
     end
     let(:inbox) { whatsapp_channel.inbox }
     let(:group_contact) { create(:contact, account: account, group_type: :group, identifier: 'group@g.us') }
     let(:member_contact) { create(:contact, account: account, phone_number: '+5511999990002') }
     let!(:member) { create(:group_member, group_contact: group_contact, contact: member_contact) }
-    let(:baileys_service) { instance_double(Whatsapp::Providers::WhatsappBaileysService) }
+    let(:provider_service) { whatsapp_channel }
 
     before do
       create(:contact_inbox, inbox: inbox, contact: group_contact)
-      allow(Whatsapp::Providers::WhatsappBaileysService).to receive(:new).and_return(baileys_service)
-      allow(baileys_service).to receive(:update_group_participants).and_return(true)
+      allow(provider_service).to receive(:update_group_participants).and_return(true)
     end
 
     context 'when user is logged in' do
@@ -156,8 +154,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:update_group_participants)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:update_group_participants)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         delete "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_members/#{member.id}",
                headers: admin.create_new_auth_token
@@ -169,18 +167,17 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
 
   describe 'PATCH /api/v1/accounts/{account.id}/contacts/:id/group_members/:member_id' do
     let(:whatsapp_channel) do
-      create(:channel_whatsapp, provider: 'baileys', validate_provider_config: false, sync_templates: false, account: account)
+      create(:channel_whatsapp, provider: 'unoapi', validate_provider_config: false, sync_templates: false, account: account)
     end
     let(:inbox) { whatsapp_channel.inbox }
     let(:group_contact) { create(:contact, account: account, group_type: :group, identifier: 'group@g.us') }
     let(:member_contact) { create(:contact, account: account, phone_number: '+5511999990003') }
     let!(:member) { create(:group_member, group_contact: group_contact, contact: member_contact, role: :member) }
-    let(:baileys_service) { instance_double(Whatsapp::Providers::WhatsappBaileysService) }
+    let(:provider_service) { whatsapp_channel }
 
     before do
       create(:contact_inbox, inbox: inbox, contact: group_contact)
-      allow(Whatsapp::Providers::WhatsappBaileysService).to receive(:new).and_return(baileys_service)
-      allow(baileys_service).to receive(:update_group_participants).and_return(true)
+      allow(provider_service).to receive(:update_group_participants).and_return(true)
     end
 
     context 'when user is logged in' do
@@ -204,8 +201,8 @@ RSpec.describe '/api/v1/accounts/{account.id}/contacts/:id/group_members', type:
       end
 
       it 'returns 422 when provider is unavailable' do
-        allow(baileys_service).to receive(:update_group_participants)
-          .and_raise(Whatsapp::Providers::WhatsappBaileysService::ProviderUnavailableError, 'Offline')
+        allow(provider_service).to receive(:update_group_participants)
+          .and_raise(Groups::ProviderUnavailableError, 'Offline')
 
         patch "/api/v1/accounts/#{account.id}/contacts/#{group_contact.id}/group_members/#{member.id}",
               params: { role: 'admin' },

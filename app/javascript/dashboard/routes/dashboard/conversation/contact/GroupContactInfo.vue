@@ -24,7 +24,6 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
 import Accordion from 'dashboard/components-next/Accordion/Accordion.vue';
 import TeleportWithDirection from 'dashboard/components-next/TeleportWithDirection.vue';
-import BaileysGroupOptions from './BaileysGroupOptions.vue';
 
 const props = defineProps({
   contact: {
@@ -1057,8 +1056,6 @@ useEventListener(sidebarScrollRef, 'scroll', closeMemberMenu);
         :title="t('GROUP.SETTINGS.ADVANCED_OPTIONS')"
         class="mt-4"
       >
-        <BaileysGroupOptions :contact="contact" :is-admin="isInboxAdmin" />
-
         <!-- Leave Group section -->
         <div class="mt-3">
           <div v-if="!showLeaveConfirm">
