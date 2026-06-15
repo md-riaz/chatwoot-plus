@@ -1,40 +1,40 @@
 # Chatwoot Plus fork differences
 
-This repository is a fork of upstream Chatwoot with a small set of product extensions and self-hosting changes. The goal is to keep the fork close to upstream while preserving the features listed here.
+This repository is a fork of upstream Chatwoot with product extensions for this deployment. This document lists the supported differences future maintainers and AI agents should preserve.
 
 Last summarized after syncing with upstream `develop` on 2026-06-14.
 
 At the time of this document, this fork is:
 
 ```text
-upstream/develop...origin/develop: 0 behind, 13 ahead
+upstream/develop...origin/develop: 0 behind, 14 ahead
 ```
 
-## Maintenance rules for future work
+## Maintenance rules
 
 - Keep upstream sync PRs separate from feature PRs.
-- Prefer small extension files under `app/services/plus`, route extension files, provider-specific services, or isolated frontend helpers.
-- Avoid broad edits to upstream-hot files unless behavior requires it.
-- Do not reintroduce Kanban unless explicitly requested; it was intentionally removed.
+- Keep feature PRs small and focused.
+- Prefer isolated extension files under `app/services/plus`, route extension files, provider-specific services, or frontend helpers.
+- Avoid expanding upstream-hot files unless required for behavior.
 - New frontend text must include pt-BR translations.
-- If changing backend behavior, check frontend impact. If changing frontend behavior, check backend/API impact.
+- If changing backend behavior, check frontend/API impact. If changing frontend behavior, check backend impact.
 
-## Major fork additions
+## Supported fork additions
 
 ### 1. Custom SIP/WebRTC voice channel
 
-Adds a custom SIP voice provider alongside existing voice infrastructure.
+Adds a custom SIP voice provider alongside Chatwoot voice infrastructure.
 
-Main capabilities:
+Capabilities:
 
 - Custom SIP/WebRTC browser calling.
 - SIP over WSS with username/password credentials.
 - Inbound and outbound custom SIP calls.
-- Browser-side custom SIP recording using `MediaRecorder`.
-- Uploads custom SIP recordings as audio attachments on the existing voice-call message.
 - Persistent SIP registration between calls.
-- Floating incoming-call UI for custom voice calls.
+- Floating incoming-call UI.
 - Conversation reuse support for locked voice inboxes.
+- Browser-side custom SIP recording using `MediaRecorder`.
+- Recording upload as audio attachment on the existing voice-call message.
 
 Representative files:
 
@@ -56,57 +56,50 @@ app/javascript/dashboard/components-next/call/FloatingCallWidget.vue
 app/javascript/dashboard/components-next/message/bubbles/VoiceCall.vue
 ```
 
-Important design decision:
+Important behavior:
 
 - Custom SIP recordings do not use `Call#recording`.
-- They follow the WhatsApp-style browser upload pattern and attach audio to the voice-call message.
+- Custom SIP recordings attach to the voice-call message as an audio attachment.
 
-### 2. WhatsApp provider extensions: UnoAPI, Baileys, Z-API, NotificaMe
+### 2. UnoAPI WhatsApp support
 
-Adds non-upstream WhatsApp provider integrations and settings screens.
+Adds UnoAPI as the supported non-upstream WhatsApp provider for this fork.
 
-Main capabilities:
+Capabilities:
 
-- UnoAPI provider support.
-- Baileys provider support.
-- Z-API provider support.
-- NotificaMe channel UI/API additions.
-- Provider-specific webhook handling.
-- Provider connection status and QR helpers.
-- UnoAPI production compose/service support.
+- UnoAPI inbox creation/settings UI.
+- UnoAPI webhook handling.
+- UnoAPI group participant sync support.
+- UnoAPI deployment/service helpers.
 
 Representative files:
 
 ```text
 app/services/whatsapp/providers/unoapi_service.rb
-app/services/whatsapp/providers/whatsapp_baileys_service.rb
-app/services/whatsapp/providers/whatsapp_zapi_service.rb
 app/services/whatsapp/incoming_message_unoapi_service.rb
-app/services/whatsapp/incoming_message_baileys_service.rb
-app/services/whatsapp/incoming_message_zapi_service.rb
-app/jobs/channels/whatsapp/baileys_connection_check_job.rb
-app/jobs/channels/whatsapp/zapi_qr_code_job.rb
+app/services/whatsapp/unoapi/group_participant_contact_merger.rb
+app/services/whatsapp/unoapi/group_participants_sync_service.rb
+app/services/whatsapp/unoapi_webhook_setup_service.rb
+app/jobs/whatsapp/unoapi/group_participants_sync_job.rb
 app/javascript/dashboard/routes/dashboard/settings/inbox/channels/Unoapi.vue
-app/javascript/dashboard/routes/dashboard/settings/inbox/channels/BaileysWhatsapp.vue
-app/javascript/dashboard/routes/dashboard/settings/inbox/channels/ZapiWhatsapp.vue
-app/javascript/dashboard/routes/dashboard/settings/inbox/channels/NotificaMe.vue
+app/javascript/dashboard/routes/dashboard/settings/inbox/settingsPage/UnoapiConfiguration.vue
 deployment/unoapi.service
 docker-compose.production.yaml
 docker-compose.yaml
 ```
 
-### 3. WhatsApp group conversation support
+### 3. WhatsApp group conversations
 
-Adds group conversation handling for WhatsApp-style providers.
+Adds group conversation handling for UnoAPI-backed WhatsApp conversations.
 
-Main capabilities:
+Capabilities:
 
 - Group-aware conversation creation.
 - Group members and group contacts.
-- Group metadata, invite links, join requests, admin/member actions.
+- Group metadata, invite links, join requests, and member/admin actions.
 - Group participant sync jobs and services.
-- Group UI elements in conversation view and contact panel.
-- Groups tab/filter in chat list.
+- Group UI in conversation view and contact panel.
+- Groups tab/filter in conversation list.
 
 Representative files:
 
@@ -135,13 +128,12 @@ app/javascript/dashboard/i18n/locale/pt_BR/groups.json
 
 Adds message scheduling and recurrence support.
 
-Main capabilities:
+Capabilities:
 
 - Schedule a conversation message for later.
 - Recurring scheduled messages.
 - Background jobs to trigger and send scheduled messages.
 - Frontend modal/list/sidebar display.
-- API docs/spec coverage.
 
 Representative files:
 
@@ -162,11 +154,11 @@ app/javascript/dashboard/routes/dashboard/conversation/scheduledMessages/Schedul
 app/javascript/dashboard/routes/dashboard/conversation/scheduledMessages/ScheduledMessageModal.vue
 ```
 
-### 5. Internal chat via normal Chatwoot conversations
+### 5. Internal chat through normal Chatwoot conversations
 
-Adds a lightweight internal chat inbox/channel type using existing Chatwoot conversations, not the large Slack-style `InternalChat::*` system from another fork.
+Adds internal agent-to-agent chat using normal Chatwoot conversations and a dedicated internal inbox type.
 
-Main capabilities:
+Capabilities:
 
 - `Channel::Internal` inbox type.
 - Internal conversations between agents.
@@ -188,21 +180,15 @@ app/javascript/dashboard/routes/dashboard/settings/inbox/channels/Internal.vue
 app/javascript/dashboard/store/modules/conversations/helpers.js
 ```
 
-Source lineage note:
-
-- The lightweight flow traces to Viper/Uno fork commits such as `b30fed1147 feat: add internal chat inbox and UI flow`.
-- This fork does not use the full Fazer-AI Slack/Discord-style internal chat implementation with separate `InternalChat::*` models, channels, reactions, polls, and drafts.
-
-### 6. OmniAI / comment management integrations
+### 6. OmniAI/social comment management
 
 Adds comment forwarding and dashboard UI for social comments.
 
-Main capabilities:
+Capabilities:
 
 - Facebook/Instagram comment webhook forwarding.
-- OmniAI comment dashboard route.
+- Comment dashboard route.
 - Comment reply and private reply proxy controllers.
-- Middleware for Facebook comment webhook interception.
 
 Representative files:
 
@@ -222,7 +208,7 @@ config/routes/plus_omni_ai_webhook_routes.rb
 
 ### 7. Meta ad referral capture and display
 
-Adds capture and UI rendering for Click-to-WhatsApp ad referral data.
+Captures Click-to-WhatsApp ad referral payloads and renders them in message bubbles.
 
 Representative files:
 
@@ -236,7 +222,7 @@ config/initializers/plus_meta_ad_referrals.rb
 
 ### 8. Scoped agent display names
 
-Adds per-inbox/account scoped display names for agents.
+Adds scoped display names for agents.
 
 Representative files:
 
@@ -281,7 +267,7 @@ app/javascript/dashboard/components-next/message/bubbles/Text/Index.vue
 
 ### 11. Conversation and message utility additions
 
-Adds UI/API helpers for message forwarding, contact attachment, media library, message attachment updates, link previews, templates, stickers, and plus-specific reply-box actions.
+Adds utilities around message forwarding, contact attachment, media library, message attachment updates, link previews, stickers, and reply-box actions.
 
 Representative files:
 
@@ -300,7 +286,7 @@ app/javascript/dashboard/components/widgets/conversation/mixins/messagesForwardi
 
 ### 12. Self-hosting, branding, and deployment helpers
 
-Adds self-hosted deployment conveniences and generic branding helpers.
+Adds deployment conveniences and generic branding helpers.
 
 Representative files:
 
@@ -317,7 +303,7 @@ lib/middleware/plus_platform_header.rb
 
 ### 13. Reporting/dashboard additions
 
-Adds/overrides reporting builders and dashboard app support.
+Adds reporting builders and dashboard app support.
 
 Representative files:
 
@@ -330,7 +316,7 @@ app/javascript/dashboard/routes/dashboard/dashboardApps/dashboardApps.routes.js
 
 ## Conflict-reduction refactors already applied
 
-These refactors exist to reduce future upstream merge conflicts without changing behavior.
+These refactors reduce future upstream merge conflicts without changing behavior.
 
 ### ReplyBox audio format helper
 
@@ -345,7 +331,7 @@ Current behavior:
 
 ```text
 WhatsApp Cloud -> OGG
-WhatsApp / Telegram / NotificaMe / API inbox -> MP3
+WhatsApp / Telegram / API inbox -> MP3
 Other channels -> WAV
 ```
 
@@ -367,29 +353,9 @@ internal conversation type filter
 non-group unassigned counts
 ```
 
-## Explicitly removed / not present
-
-### Kanban
-
-Kanban was intentionally removed as unusable/incomplete. Do not reintroduce it unless explicitly requested and implemented as a usable feature.
-
-No references should remain under:
-
-```text
-app
-enterprise
-config
-spec
-db
-```
-
-### Full Fazer-AI InternalChat system
-
-This fork does not include the full Fazer-AI `InternalChat::*` Slack-style application. It uses the lighter `Channel::Internal` normal-conversation approach instead.
-
 ## High-risk upstream-hot files
 
-These files often conflict with upstream and should be edited carefully:
+Edit these carefully and prefer extension modules where possible:
 
 ```text
 app/finders/conversation_finder.rb
@@ -405,8 +371,6 @@ db/schema.rb
 package.json
 pnpm-lock.yaml
 ```
-
-Prefer adding small extension modules instead of expanding these files directly.
 
 ## Validation notes
 
