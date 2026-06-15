@@ -239,7 +239,7 @@ onBeforeUnmount(stopRingtone);
 
 <template>
   <div
-    v-if="incomingCalls.length || hasActiveCall"
+    v-show="incomingCalls.length || hasActiveCall"
     class="fixed ltr:right-4 rtl:left-4 bottom-4 z-50 flex flex-col gap-3 w-[400px]"
   >
     <!-- Stacked incoming calls (shown above the primary card) -->
